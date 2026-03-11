@@ -45,10 +45,14 @@ async function getSatelliteProjects() {
     const satellites = [];
 
     for (const line of lines) {
-      if (line.includes('sat-') && line.includes('20260310')) {
-        const match = line.match(/sat-[\w-]+-\d{8}-\d{4}/);
-        if (match) {
-          satellites.push(match[0]);
+      // Match lines with satellite project names
+      // Format: "  sat-name-20260310-0001   https://...   2h   24.x"
+      const trimmed = line.trim();
+      if (trimmed.startsWith('sat-') && trimmed.includes('20260310')) {
+        // Extract just the project name (first column)
+        const parts = trimmed.split(/\s+/);
+        if (parts.length > 0 && parts[0].startsWith('sat-')) {
+          satellites.push(parts[0]);
         }
       }
     }

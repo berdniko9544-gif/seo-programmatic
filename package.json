@@ -19,6 +19,7 @@
     "satellite:health": "node scripts/health-check.js",
     "satellite:daily": "node scripts/daily-generator.js",
     "satellite:trigger-isr": "node scripts/trigger-isr.js",
+    "satellite:update": "node scripts/update-satellites.js",
     "deploy:current": "node scripts/deploy-current.js"
   },
   "dependencies": {
