@@ -45,10 +45,14 @@ async function getSatelliteProjects() {
     const satellites = [];
 
     for (const line of lines) {
+      // Skip header lines and empty lines
+      if (!line.trim() || line.includes('Project Name') || line.includes('---')) {
+        continue;
+      }
+
       // Match lines with satellite project names
-      // Format: "  sat-name-20260310-0001   https://...   2h   24.x"
       const trimmed = line.trim();
-      if (trimmed.startsWith('sat-') && trimmed.includes('20260310')) {
+      if (trimmed.startsWith('sat-')) {
         // Extract just the project name (first column)
         const parts = trimmed.split(/\s+/);
         if (parts.length > 0 && parts[0].startsWith('sat-')) {
@@ -57,8 +61,11 @@ async function getSatelliteProjects() {
       }
     }
 
-    log(`Found ${satellites.length} satellite projects`);
-    return satellites;
+    // Remove duplicates
+    const uniqueSatellites = [...new Set(satellites)];
+
+    log(`Found ${uniqueSatellites.length} satellite projects`);
+    return uniqueSatellites;
   } catch (error) {
     log(`Error fetching projects: ${error.message}`, 'error');
     return [];
