@@ -1,0 +1,35 @@
+name: ISR Content Update
+
+on:
+  schedule:
+    # Run every 6 hours to regenerate content
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+env:
+  DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+jobs:
+  trigger-isr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Trigger ISR revalidation
+        run: node scripts/trigger-isr.js
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+
+      - name: Summary
+        run: echo "✅ ISR revalidation triggered for all satellites"

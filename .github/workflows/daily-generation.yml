@@ -1,0 +1,63 @@
+name: Daily Satellite Generation
+
+on:
+  schedule:
+    # Run daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_TEAM: ${{ secrets.VERCEL_TEAM }}
+  YANDEX_WEBMASTER_TOKEN: ${{ secrets.YANDEX_WEBMASTER_TOKEN }}
+  YANDEX_USER_ID: ${{ secrets.YANDEX_USER_ID }}
+
+jobs:
+  generate-satellites:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180 # 3 hours max
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Generate 20 satellites with AI content
+        run: node scripts/daily-generator.js
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM: ${{ secrets.VERCEL_TEAM }}
+
+      - name: Upload generation logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: generation-logs
+          path: ../satellites/daily-generation-log.json
+          retention-days: 30
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Daily satellite generation failed!"
+          echo "Check logs for details"
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "✅ Daily generation complete!"
+          echo "📊 Generated 20 satellites with 1000 pages each"
+          echo "📈 Total: 20,000 new pages"
