@@ -12,10 +12,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
 
-  // ISR configuration
-  experimental: {
-    isrMemoryCacheSize: 0, // Disable in-memory cache for Vercel
-  },
+  // ISR is enabled by default in Next.js 14+
 
   // Optimize bundle
   webpack: (config, { isServer }) => {
