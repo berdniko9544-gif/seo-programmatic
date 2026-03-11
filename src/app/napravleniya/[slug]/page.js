@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation';
 import { Header, Footer, CtaBlock, Breadcrumbs, PageJsonLd, InternalLinks } from '@/components/shared';
 import { directions, cities } from '@/data/seo-data';
 
+// Enable ISR - revalidate every 6 hours
+export const revalidate = 21600;
+
 export async function generateStaticParams() {
   return directions.map(d => ({ slug: d.id }));
 }

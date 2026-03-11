@@ -16,7 +16,10 @@
     "satellite:deploy-all": "node scripts/deploy-all.js",
     "satellite:submit-seo": "node scripts/submit-to-search.js",
     "satellite:master": "node scripts/master.js",
-    "satellite:health": "node scripts/health-check.js"
+    "satellite:health": "node scripts/health-check.js",
+    "satellite:daily": "node scripts/daily-generator.js",
+    "satellite:trigger-isr": "node scripts/trigger-isr.js",
+    "deploy:current": "node scripts/deploy-current.js"
   },
   "dependencies": {
     "next": "^14.2.0",
