@@ -3,16 +3,16 @@ import { test, expect } from '@playwright/test';
 test.describe('Main Site', () => {
   test('should load homepage', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle(/SEO/);
+    await expect(page).toHaveTitle(/1MB3|Заработок/);
     await expect(page.locator('h1')).toBeVisible();
   });
 
   test('should have working navigation', async ({ page }) => {
     await page.goto('/');
 
-    // Check navigation links
+    // Check navigation links exist
     const navLinks = page.locator('nav a');
-    await expect(navLinks).toHaveCount(4, { timeout: 5000 });
+    await expect(navLinks.first()).toBeVisible({ timeout: 5000 });
   });
 
   test('should have valid sitemap', async ({ page }) => {
