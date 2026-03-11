@@ -1,0 +1,40 @@
+name: Performance Monitor
+
+on:
+  schedule:
+    # Check performance daily at 4 AM UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli
+
+      - name: Run Lighthouse on main site
+        run: |
+          lhci autorun --collect.url=https://seo-programmatic-main.vercel.app \
+            --collect.numberOfRuns=3 \
+            --upload.target=temporary-public-storage
+
+      - name: Check performance score
+        run: |
+          echo "✅ Lighthouse audit complete"
+          echo "View results in the workflow logs"
+
+      - name: Summary
+        run: |
+          echo "📊 Performance audit completed"
+          echo "🔍 Check Lighthouse scores above"

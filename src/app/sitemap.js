@@ -1,6 +1,6 @@
 import { getAllPages } from '@/data/seo-data';
 
-const BASE_URL = 'https://1mb3-seo.vercel.app';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
 
 export default function sitemap() {
   const allPages = getAllPages();

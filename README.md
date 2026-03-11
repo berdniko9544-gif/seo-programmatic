@@ -36,10 +36,10 @@ gh auth login
 gh repo create seo-programmatic --public --source=. --remote=origin --push
 
 # 3. Add GitHub Secrets
-gh secret set DEEPSEEK_API_KEY --body "sk-0745998fd651417cb649a864d5f427de"
-gh secret set VERCEL_TOKEN --body "vca_4GmyixM5cqJicGNspgfCDWaILBrZA8Hz0RM9P0TuybzW3ernof1sBzB7"
-gh secret set VERCEL_TEAM --body "berdniko9544-2708s-projects"
-gh secret set REVALIDATE_SECRET --body "your_random_secret_here_change_this"
+gh secret set DEEPSEEK_API_KEY --body "YOUR_DEEPSEEK_API_KEY_HERE"
+gh secret set VERCEL_TOKEN --body "YOUR_VERCEL_TOKEN_HERE"
+gh secret set VERCEL_TEAM --body "YOUR_VERCEL_TEAM_HERE"
+gh secret set REVALIDATE_SECRET --body "$(openssl rand -base64 32)"
 
 # 4. Enable GitHub Actions
 gh workflow enable daily-generation.yml

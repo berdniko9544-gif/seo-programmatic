@@ -1,4 +1,6 @@
 export default function robots() {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
   return {
     rules: [
       {
@@ -15,7 +17,7 @@ export default function robots() {
         allow: '/',
       },
     ],
-    sitemap: 'https://1mb3-seo.vercel.app/sitemap.xml',
-    host: 'https://1mb3-seo.vercel.app',
+    sitemap: `${baseUrl}/sitemap.xml`,
+    host: baseUrl,
   };
 }

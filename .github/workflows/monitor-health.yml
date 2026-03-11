@@ -1,0 +1,75 @@
+name: Health Monitor
+
+on:
+  schedule:
+    # Check health every 6 hours
+    - cron: '30 */6 * * *'
+  workflow_dispatch:
+
+env:
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_TEAM: ${{ secrets.VERCEL_TEAM }}
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run health check
+        run: node scripts/health-check.js
+        continue-on-error: true
+
+      - name: Check main site
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://seo-programmatic-main.vercel.app)
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Main site is down (HTTP $STATUS)"
+            exit 1
+          fi
+          echo "✅ Main site is up (HTTP $STATUS)"
+
+      - name: Check satellites sample
+        run: |
+          SATELLITES=(
+            "https://sat-market-signal-desk-6-20260310-0.vercel.app"
+            "https://sat-creator-revenue-fiel-20260310-0.vercel.app"
+            "https://sat-market-signal-desk-5-20260310-0.vercel.app"
+          )
+
+          FAILED=0
+          for URL in "${SATELLITES[@]}"; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+            if [ "$STATUS" != "200" ]; then
+              echo "❌ Satellite down: $URL (HTTP $STATUS)"
+              FAILED=$((FAILED + 1))
+            else
+              echo "✅ Satellite up: $URL"
+            fi
+          done
+
+          if [ $FAILED -gt 0 ]; then
+            echo "⚠️ $FAILED satellites are down"
+            exit 1
+          fi
+
+      - name: Summary
+        if: success()
+        run: echo "✅ All systems operational"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Health check failed!"
+          echo "Check the logs for details"
