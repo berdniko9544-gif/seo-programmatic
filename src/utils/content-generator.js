@@ -5,6 +5,11 @@
 
 const { DeepSeekClient } = require('../utils/deepseek');
 const { SatelliteRegistry } = require('../utils/satellite-registry');
+const { InternalLinkingEngine } = require('../utils/internal-linking');
+const { LongTailGenerator } = require('../utils/longtail-generator');
+const { SchemaGenerator } = require('../utils/schema-generator');
+const { ContentFreshnessManager } = require('../utils/content-freshness');
+const { ContentOptimizer } = require('../utils/content-optimizer');
 const fs = require('fs');
 const path = require('path');
 
@@ -13,6 +18,7 @@ class ContentGenerator {
     this.client = new DeepSeekClient(apiKey);
     this.cache = new Map();
     this.registry = registry || new SatelliteRegistry();
+    this.linkingEngine = null; // Will be initialized after pages are generated
   }
 
   async generateSatelliteData(niche, satelliteNumber, pagesCount = 1000) {
@@ -30,13 +36,24 @@ class ContentGenerator {
     // Generate articles
     const articles = await this.generateArticles(niche, 50);
 
+    // Generate long-tail pages (MASSIVE traffic boost)
+    const longTailPages = this.generateLongTailPages(niche, 300);
+
+    // Collect all pages for internal linking
+    const allPages = this.collectAllPages(directions, articles, longTailPages, niche);
+
+    // Initialize internal linking engine
+    this.linkingEngine = new InternalLinkingEngine(allPages);
+
     return {
       directions,
       cities,
       tools,
       articles,
+      longTailPages,
       audiences: this.generateAudiences(),
       comparisonPairs: this.generateComparisons(directions),
+      allPages,
     };
   }
 
@@ -178,13 +195,130 @@ class ContentGenerator {
         h1: topic,
         desc: `Полное руководство: ${topic}`,
         readTime: `${5 + (i % 10)} мин`,
-        keywords: [topic, niche, '2026']
+        keywords: [topic, niche, '2026'],
+        type: 'article',
+        url: `/blog/article-${i + 1}-${this.transliterate(topic.toLowerCase().substring(0, 30))}`
       });
 
       // Don't generate actual content here - will be done via ISR
     }
 
     return articles;
+  }
+
+  /**
+   * Generate long-tail keyword pages (TRAFFIC MULTIPLIER)
+   */
+  generateLongTailPages(niche, count = 300) {
+    console.log(`🎯 Generating ${count} long-tail pages for ${niche}`);
+
+    const longTailKeywords = LongTailGenerator.generateNicheKeywords(niche);
+    const pages = [];
+
+    // Take top keywords by priority
+    const sortedKeywords = longTailKeywords
+      .sort((a, b) => b.priority - a.priority)
+      .slice(0, count);
+
+    sortedKeywords.forEach((kw, index) => {
+      const meta = LongTailGenerator.generatePageMeta(kw.keyword, niche);
+      const freshness = ContentFreshnessManager.addFreshnessMetadata(meta);
+
+      pages.push({
+        ...freshness,
+        keyword: kw.keyword,
+        priority: kw.priority,
+        type: 'longtail',
+        url: `/longtail/${meta.slug}`,
+        path: `/longtail/${meta.slug}`,
+        name: meta.title
+      });
+    });
+
+    console.log(`✅ Generated ${pages.length} long-tail pages`);
+    return pages;
+  }
+
+  /**
+   * Collect all pages for internal linking
+   */
+  collectAllPages(directions, articles, longTailPages, niche) {
+    const allPages = [];
+
+    // Add directions
+    directions.forEach(dir => {
+      allPages.push({
+        url: `/napravleniya/${dir.id}`,
+        path: `/napravleniya/${dir.id}`,
+        title: dir.name,
+        name: dir.name,
+        description: dir.description,
+        keywords: dir.keywords || [dir.name, niche],
+        type: 'direction'
+      });
+    });
+
+    // Add articles
+    articles.forEach(article => {
+      allPages.push({
+        url: article.url,
+        path: article.url,
+        title: article.title,
+        name: article.title,
+        description: article.desc,
+        keywords: article.keywords,
+        type: 'article'
+      });
+    });
+
+    // Add long-tail pages
+    allPages.push(...longTailPages);
+
+    return allPages;
+  }
+
+  /**
+   * Optimize content with all SEO features
+   */
+  optimizeContent(content, metadata) {
+    // Add internal links
+    if (this.linkingEngine) {
+      content = this.linkingEngine.addInternalLinks(
+        content,
+        metadata.url,
+        5 // max 5 internal links per page
+      );
+    }
+
+    // Add cross-links to other satellites
+    content = this.addCrossLinks(
+      content,
+      metadata.niche,
+      metadata.domain,
+      metadata.title
+    );
+
+    // Full content optimization
+    const optimized = ContentOptimizer.optimize(content, metadata);
+
+    return optimized;
+  }
+
+  /**
+   * Generate schema markup for page
+   */
+  generateSchema(pageType, data) {
+    switch (pageType) {
+      case 'article':
+      case 'longtail':
+        return SchemaGenerator.article(data);
+      case 'direction':
+        return SchemaGenerator.howTo(data);
+      case 'faq':
+        return SchemaGenerator.faq(data.questions);
+      default:
+        return null;
+    }
   }
 
   /**
@@ -307,6 +441,20 @@ class ContentGenerator {
 
   sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Generate complete sitemap for satellite
+   */
+  generateSitemap(baseUrl, allPages) {
+    return SitemapGenerator.generate(baseUrl, allPages);
+  }
+
+  /**
+   * Generate robots.txt for satellite
+   */
+  generateRobotsTxt(baseUrl) {
+    return RobotsGenerator.generateAdvanced(baseUrl);
   }
 }
 

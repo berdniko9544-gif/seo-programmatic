@@ -93,7 +93,7 @@ class DailySatelliteGenerator {
       console.log(`\n[${satelliteNumber}/${CONFIG.dailySatellites}] 🎨 Generating: ${domain}`);
 
       try {
-        // Generate unique content using AI
+        // Generate unique content using AI (includes long-tail pages)
         const data = await this.contentGenerator.generateSatelliteData(
           niche,
           satelliteNumber,

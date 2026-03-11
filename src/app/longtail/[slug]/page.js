@@ -1,0 +1,132 @@
+import { notFound } from 'next/navigation';
+import { Header, Footer, CtaBlock } from '@/components/shared';
+
+// This will be populated by satellite generator
+const longTailPages = [];
+
+export async function generateStaticParams() {
+  return longTailPages.map(page => ({
+    slug: page.slug
+  }));
+}
+
+export async function generateMetadata({ params }) {
+  const page = longTailPages.find(p => p.slug === params.slug);
+
+  if (!page) {
+    return {
+      title: 'Страница не найдена'
+    };
+  }
+
+  return {
+    title: page.title,
+    description: page.description,
+    keywords: page.keywords,
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_BASE_URL}/longtail/${params.slug}`
+    },
+    openGraph: {
+      title: page.title,
+      description: page.description,
+      type: 'article',
+      publishedTime: page.datePublished,
+      modifiedTime: page.dateModified
+    }
+  };
+}
+
+export default function LongTailPage({ params }) {
+  const page = longTailPages.find(p => p.slug === params.slug);
+
+  if (!page) {
+    notFound();
+  }
+
+  // Schema markup
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": page.title,
+    "description": page.description,
+    "datePublished": page.datePublished,
+    "dateModified": page.dateModified,
+    "author": {
+      "@type": "Person",
+      "name": "1MB3"
+    }
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+
+      <Header />
+
+      <article className="article-container">
+        <div className="container">
+          <header className="article-header">
+            {page.freshnessBadge && (
+              <div dangerouslySetInnerHTML={{ __html: page.freshnessBadge }} />
+            )}
+            <h1>{page.h1}</h1>
+            <div className="article-meta">
+              <span>📅 {page.lastUpdated}</span>
+              {page.readTime && <span>⏱️ {page.readTime}</span>}
+            </div>
+          </header>
+
+          <div className="article-content">
+            <p className="lead">{page.description}</p>
+
+            <section>
+              <h2>Что такое {page.keyword}?</h2>
+              <p>
+                {page.keyword} — это актуальная тема в сфере {page.keywords?.[1] || 'бизнеса'},
+                которая набирает популярность в 2026 году. В этом руководстве мы подробно
+                разберем все аспекты и дадим практические рекомендации.
+              </p>
+            </section>
+
+            <section>
+              <h2>Основные преимущества</h2>
+              <ul>
+                <li>Актуальность в 2026 году</li>
+                <li>Проверенные методы и инструменты</li>
+                <li>Пошаговые инструкции</li>
+                <li>Реальные примеры применения</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2>Как начать?</h2>
+              <p>
+                Для успешного старта в теме "{page.keyword}" рекомендуем следовать
+                проверенному плану действий. Начните с изучения основ, затем переходите
+                к практике.
+              </p>
+            </section>
+
+            <section>
+              <h2>Полезные ресурсы</h2>
+              <p>
+                Для более глубокого изучения темы рекомендуем ознакомиться с нашим
+                полным гайдом, который содержит детальные инструкции, инструменты
+                и шаблоны для работы.
+              </p>
+            </section>
+          </div>
+
+          <CtaBlock />
+        </div>
+      </article>
+
+      <Footer />
+    </>
+  );
+}
+
+export const revalidate = 21600; // 6 hours
