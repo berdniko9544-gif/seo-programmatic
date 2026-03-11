@@ -103,7 +103,8 @@ module.exports = nextConfig`;
 
 function updateSatellite(satelliteDir) {
   const satelliteName = path.basename(satelliteDir);
-  console.log(\`\\n📦 Updating: \${satelliteName}\`);
+  console.log('');
+  console.log('📦 Updating: ' + satelliteName);
 
   try {
     // Copy new files
@@ -117,7 +118,7 @@ function updateSatellite(satelliteDir) {
           fs.mkdirSync(destDir, { recursive: true });
         }
         fs.copyFileSync(srcPath, destPath);
-        console.log(\`  ✅ Copied: \${file.dest}\`);
+        console.log('  ✅ Copied: ' + file.dest);
       }
     }
 
@@ -150,10 +151,10 @@ function updateSatellite(satelliteDir) {
       console.log('  ✅ Updated: package.json');
     }
 
-    console.log(\`  ✅ \${satelliteName} updated successfully\`);
+    console.log('  ✅ ' + satelliteName + ' updated successfully');
     return true;
   } catch (error) {
-    console.error(\`  ❌ Error updating \${satelliteName}:\`, error.message);
+    console.error('  ❌ Error updating ' + satelliteName + ':', error.message);
     return false;
   }
 }
@@ -174,7 +175,9 @@ function main() {
     return;
   }
 
-  console.log(\`\\n📊 Found \${satellites.length} satellites to update\\n\`);
+  console.log('');
+  console.log('📊 Found ' + satellites.length + ' satellites to update');
+  console.log('');
 
   let successCount = 0;
   let failCount = 0;
@@ -188,8 +191,11 @@ function main() {
     }
   }
 
-  console.log('\\n' + '═'.repeat(80));
-  console.log(\`\\n✅ Update complete: \${successCount} successful, \${failCount} failed\\n\`);
+  console.log('');
+  console.log('═'.repeat(80));
+  console.log('');
+  console.log('✅ Update complete: ' + successCount + ' successful, ' + failCount + ' failed');
+  console.log('');
 }
 
 if (require.main === module) {
