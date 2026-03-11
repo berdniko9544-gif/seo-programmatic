@@ -8,6 +8,8 @@
  */
 
 const { ContentGenerator } = require('../src/utils/content-generator');
+const { SatelliteRegistry } = require('../src/utils/satellite-registry');
+const { SearchEnginePing } = require('../src/utils/search-ping');
 const { SatelliteGenerator } = require('./satellite-generator');
 const { BuildManager } = require('./build-all');
 const { DeploymentManager } = require('./deploy-all');
@@ -34,7 +36,9 @@ const CONFIG = {
 
 class DailySatelliteGenerator {
   constructor() {
-    this.contentGenerator = new ContentGenerator(CONFIG.deepseekApiKey);
+    this.registry = new SatelliteRegistry();
+    this.contentGenerator = new ContentGenerator(CONFIG.deepseekApiKey, this.registry);
+    this.searchPing = new SearchEnginePing();
     this.results = [];
     this.startTime = Date.now();
   }
@@ -106,6 +110,16 @@ class DailySatelliteGenerator {
 
         await generator.generate();
 
+        // Register satellite for cross-linking
+        const satelliteUrl = `https://${domain}.vercel.app`;
+        this.contentGenerator.registerSatellite({
+          name: domain,
+          domain: domain,
+          niche: niche,
+          url: satelliteUrl,
+          pages: data.articles || [],
+        });
+
         this.results.push({
           id: satelliteNumber,
           domain,
@@ -157,8 +171,32 @@ class DailySatelliteGenerator {
     console.log('\n🔍 STEP 4: Submitting to search engines');
     console.log('─'.repeat(80));
 
-    const seo = new SEOSubmissionManager();
-    await seo.submitAll();
+    // Ping search engines for each successful satellite
+    const successfulSatellites = this.results.filter(r => r.success);
+
+    for (const satellite of successfulSatellites) {
+      const sitemapUrl = `https://${satellite.domain}.vercel.app/sitemap.xml`;
+
+      try {
+        console.log(`📡 Pinging search engines for ${satellite.domain}...`);
+        const pingResults = await this.searchPing.pingAll(sitemapUrl);
+
+        pingResults.forEach(result => {
+          if (result.success) {
+            console.log(`  ✅ ${result.engine}: Success`);
+          } else {
+            console.log(`  ⚠️ ${result.engine}: ${result.error}`);
+          }
+        });
+
+        // Small delay between pings
+        await this.sleep(1000);
+      } catch (error) {
+        console.error(`  ❌ Error pinging for ${satellite.domain}:`, error.message);
+      }
+    }
+
+    console.log(`\n✅ Pinged ${successfulSatellites.length} satellites`);
   }
 
   saveResults() {

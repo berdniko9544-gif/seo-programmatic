@@ -4,13 +4,15 @@
 // ============================================================
 
 const { DeepSeekClient } = require('../utils/deepseek');
+const { SatelliteRegistry } = require('../utils/satellite-registry');
 const fs = require('fs');
 const path = require('path');
 
 class ContentGenerator {
-  constructor(apiKey) {
+  constructor(apiKey, registry = null) {
     this.client = new DeepSeekClient(apiKey);
     this.cache = new Map();
+    this.registry = registry || new SatelliteRegistry();
   }
 
   async generateSatelliteData(niche, satelliteNumber, pagesCount = 1000) {
@@ -183,6 +185,32 @@ class ContentGenerator {
     }
 
     return articles;
+  }
+
+  /**
+   * Add cross-links to content
+   */
+  addCrossLinks(content, niche, domain, topic) {
+    if (!this.registry || this.registry.getAll().length === 0) {
+      return content;
+    }
+
+    const links = this.registry.generateCrossLinks(niche, domain, topic);
+    if (links.length === 0) {
+      return content;
+    }
+
+    const linksHTML = this.registry.formatLinksAsHTML(links);
+    return content + linksHTML;
+  }
+
+  /**
+   * Register satellite in registry
+   */
+  registerSatellite(satellite) {
+    if (this.registry) {
+      this.registry.register(satellite);
+    }
   }
 
   generateAudiences() {
