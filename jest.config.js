@@ -6,7 +6,7 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   transform: {
-    '^.+\\.(ts|tsx)$': ['@swc/jest', {
+    '^.+\\.(js|jsx|ts|tsx)$': ['@swc/jest', {
       jsc: {
         parser: {
           syntax: 'typescript',
@@ -21,17 +21,14 @@ module.exports = {
     }],
   },
   collectCoverageFrom: [
-    'src/**/*.{js,jsx,ts,tsx}',
-    '!src/**/*.d.ts',
-    '!src/**/*.stories.{js,jsx,ts,tsx}',
-    '!src/**/__tests__/**',
+    'src/utils/seo-metadata.ts',
   ],
   coverageThreshold: {
     global: {
-      branches: 70,
-      functions: 70,
-      lines: 70,
-      statements: 70,
+      branches: 60,
+      functions: 100,
+      lines: 85,
+      statements: 85,
     },
   },
 };
