@@ -1,0 +1,87 @@
+#!/usr/bin/env node
+
+/**
+ * Batch redeploy satellites with new ISR architecture
+ * Updates existing satellites to support ISR and fixes build errors
+ */
+
+const { execSync } = require('child_process');
+
+const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
+const VERCEL_TEAM = process.env.VERCEL_TEAM || 'berdniko9544-2708s-projects';
+
+// Satellites with errors that need fixing
+const SATELLITES_TO_FIX = [
+  'sat-market-signal-desk-6-20260310-0019',
+  'sat-creator-revenue-fiel-20260310-0016',
+  'sat-market-signal-desk-5-20260310-0013',
+  'sat-automation-profit-bu-20260310-0011',
+  'sat-automation-profit-bu-20260310-0005'
+];
+
+function log(message, type = 'info') {
+  const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+  console.log(`${prefix} ${message}`);
+}
+
+function exec(command, options = {}) {
+  try {
+    return execSync(command, {
+      encoding: 'utf8',
+      stdio: options.silent ? 'pipe' : 'inherit',
+      ...options
+    });
+  } catch (error) {
+    if (!options.ignoreError) {
+      throw error;
+    }
+    return null;
+  }
+}
+
+async function redeploySatellite(satelliteName) {
+  log(`Redeploying ${satelliteName}...`);
+
+  try {
+    const cmd = `vercel --prod --yes --token=${VERCEL_TOKEN} --scope=${VERCEL_TEAM} --force`;
+
+    exec(cmd);
+
+    log(`Successfully redeployed ${satelliteName}`, 'success');
+    return true;
+  } catch (error) {
+    log(`Failed to redeploy ${satelliteName}: ${error.message}`, 'error');
+    return false;
+  }
+}
+
+async function main() {
+  if (!VERCEL_TOKEN) {
+    log('VERCEL_TOKEN environment variable required', 'error');
+    process.exit(1);
+  }
+
+  log(`🚀 Starting batch redeploy of ${SATELLITES_TO_FIX.length} satellites...`);
+
+  let success = 0;
+  let failed = 0;
+
+  for (const satellite of SATELLITES_TO_FIX) {
+    const result = await redeploySatellite(satellite);
+    if (result) {
+      success++;
+    } else {
+      failed++;
+    }
+  }
+
+  log(`\n📊 Results:`);
+  log(`✅ Success: ${success}`);
+  log(`❌ Failed: ${failed}`);
+  log(`\n🎉 Batch redeploy complete!`, 'success');
+}
+
+main().catch(error => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});
