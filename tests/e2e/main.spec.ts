@@ -15,20 +15,20 @@ test.describe('Main Site', () => {
     await expect(navLinks.first()).toBeVisible({ timeout: 5000 });
   });
 
-  test('should have valid sitemap', async ({ page }) => {
-    const response = await page.goto('/sitemap.xml');
-    expect(response?.status()).toBe(200);
+  test('should have valid sitemap', async ({ request }) => {
+    const response = await request.get('/sitemap.xml');
+    expect(response.status()).toBe(200);
 
-    const content = await page.content();
+    const content = await response.text();
     expect(content).toContain('<?xml version="1.0"');
     expect(content).toContain('<urlset');
   });
 
-  test('should have valid robots.txt', async ({ page }) => {
-    const response = await page.goto('/robots.txt');
-    expect(response?.status()).toBe(200);
+  test('should have valid robots.txt', async ({ request }) => {
+    const response = await request.get('/robots.txt');
+    expect(response.status()).toBe(200);
 
-    const content = await page.content();
+    const content = await response.text();
     expect(content).toContain('User-Agent:');
     expect(content).toContain('Sitemap:');
   });
