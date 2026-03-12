@@ -27,7 +27,7 @@ const CONFIG = {
   niches: ['crypto', 'fitness', 'education', 'realestate', 'finance', 'tech', 'health', 'business'],
   deepseekApiKey: process.env.DEEPSEEK_API_KEY,
   satellitesDir: path.join(__dirname, '../../satellites'),
-  logFile: path.join(__dirname, '../../satellites/daily-generation-log.json'),
+  logFile: path.join(__dirname, '../logs/daily-generation-log.json'),
 };
 
 // ============================================================

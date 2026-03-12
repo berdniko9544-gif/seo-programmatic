@@ -46,7 +46,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: generation-logs
-          path: ../satellites/daily-generation-log.json
+          path: logs/daily-generation-log.json
           retention-days: 30
 
       - name: Notify on failure
