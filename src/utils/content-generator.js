@@ -10,6 +10,8 @@ const { LongTailGenerator } = require('../utils/longtail-generator');
 const { SchemaGenerator } = require('../utils/schema-generator');
 const { ContentFreshnessManager } = require('../utils/content-freshness');
 const { ContentOptimizer } = require('../utils/content-optimizer');
+const { SitemapGenerator } = require('../utils/sitemap-generator');
+const { RobotsGenerator } = require('../utils/robots-generator');
 const fs = require('fs');
 const path = require('path');
 

@@ -68,6 +68,7 @@ class SatelliteGenerator {
     this.targetPages = options.pages || 500;
     this.domain = options.domain || `${this.niche}-guide-${Date.now()}`;
     this.outputPath = path.join(CONFIG.outputDir, this.domain);
+    this.customData = options.customData || null; // AI-generated data from ContentGenerator
   }
 
   async generate() {
@@ -131,6 +132,13 @@ class SatelliteGenerator {
   async generateData() {
     console.log('🎲 Генерация уникальных данных...');
 
+    // If customData provided (from AI ContentGenerator), use it
+    if (this.customData) {
+      console.log('✅ Используем AI-сгенерированные данные');
+      return this.saveCustomData(this.customData);
+    }
+
+    // Otherwise, generate template data
     const nicheTemplate = NICHE_TEMPLATES[this.niche] || NICHE_TEMPLATES.crypto;
 
     // Генерируем направления
@@ -289,6 +297,53 @@ class SatelliteGenerator {
 
   capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  /**
+   * Save AI-generated custom data
+   */
+  saveCustomData(data) {
+    const dataDir = path.join(this.outputPath, 'src', 'data');
+
+    // Save directions
+    fs.writeFileSync(
+      path.join(dataDir, 'directions.js'),
+      `// AI-generated for ${this.niche}\nconst directions = ${JSON.stringify(data.directions, null, 2)};\nmodule.exports = { directions };`
+    );
+
+    // Save locations (cities + audiences)
+    fs.writeFileSync(
+      path.join(dataDir, 'locations.js'),
+      `// AI-generated for ${this.niche}\nconst cities = ${JSON.stringify(data.cities, null, 2)};\nconst audiences = ${JSON.stringify(data.audiences, null, 2)};\nmodule.exports = { cities, audiences };`
+    );
+
+    // Save tools
+    fs.writeFileSync(
+      path.join(dataDir, 'tools.js'),
+      `// AI-generated for ${this.niche}\nconst toolCategories = ${JSON.stringify(data.tools, null, 2)};\nmodule.exports = { toolCategories };`
+    );
+
+    // Save articles + long-tail pages
+    fs.writeFileSync(
+      path.join(dataDir, 'content.js'),
+      `// AI-generated for ${this.niche}\nconst howToArticles = ${JSON.stringify(data.articles, null, 2)};\nconst comparisonPairs = ${JSON.stringify(data.comparisonPairs || [], null, 2)};\nconst yearMonths = [];\nmodule.exports = { howToArticles, comparisonPairs, yearMonths };`
+    );
+
+    // Save long-tail pages separately
+    if (data.longTailPages && data.longTailPages.length > 0) {
+      fs.writeFileSync(
+        path.join(dataDir, 'longtail-pages.js'),
+        `// AI-generated long-tail pages (${data.longTailPages.length} pages)\nconst longTailPages = ${JSON.stringify(data.longTailPages, null, 2)};\nmodule.exports = { longTailPages };`
+      );
+    }
+
+    console.log(`✅ Сохранены AI-данные:`);
+    console.log(`   - Направлений: ${data.directions.length}`);
+    console.log(`   - Городов: ${data.cities.length}`);
+    console.log(`   - Инструментов: ${data.tools.length}`);
+    console.log(`   - Статей: ${data.articles.length}`);
+    console.log(`   - Long-tail страниц: ${data.longTailPages?.length || 0}`);
+    console.log(`   - Всего страниц: ${data.allPages?.length || 0}`);
   }
 }
 
