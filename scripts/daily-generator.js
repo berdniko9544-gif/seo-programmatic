@@ -22,12 +22,15 @@ const path = require('path');
 // ============================================================
 
 const CONFIG = {
-  dailySatellites: 20,
-  pagesPerSatellite: 1000,
+  dailySatellites: Number(process.env.DAILY_SATELLITES ?? 20),
+  pagesPerSatellite: Number(process.env.PAGES_PER_SATELLITE ?? 1000),
   niches: ['crypto', 'fitness', 'education', 'realestate', 'finance', 'tech', 'health', 'business'],
   deepseekApiKey: process.env.DEEPSEEK_API_KEY,
-  satellitesDir: path.join(__dirname, '../../satellites'),
-  logFile: path.join(__dirname, '../logs/daily-generation-log.json'),
+
+  // Important: keep everything inside the repo workspace (no ".." paths).
+  // Some CI/Vercel steps reject relative patterns like ../something.
+  satellitesDir: path.join(process.cwd(), 'satellites'),
+  logFile: path.join(process.cwd(), 'logs', 'daily-generation-log.json'),
 };
 
 // ============================================================
