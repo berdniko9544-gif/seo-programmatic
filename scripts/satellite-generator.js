@@ -102,8 +102,9 @@ class SatelliteGenerator {
       fs.mkdirSync(CONFIG.outputDir, { recursive: true });
     }
 
-    // Копируем всё кроме node_modules, .next, out
-    const excludeDirs = ['node_modules', '.next', 'out', '.git', 'scripts'];
+    // Копируем всё кроме node_modules, .next, out и каталога satellites
+    // (иначе получится рекурсивная вложенность satellites внутри каждого сателлита)
+    const excludeDirs = ['node_modules', '.next', 'out', '.git', 'scripts', 'satellites'];
 
     this.copyDirRecursive(CONFIG.templateDir, this.outputPath, excludeDirs);
   }
