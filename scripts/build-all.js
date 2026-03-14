@@ -16,9 +16,9 @@ const { execSync } = require('child_process');
 // ============================================================
 
 const CONFIG = {
-  satellitesDir: path.join(__dirname, '../../satellites'),
+  satellitesDir: path.join(process.cwd(), 'satellites'),
   maxParallel: 3, // Максимум параллельных сборок
-  logFile: path.join(__dirname, '../../satellites/build-log.json'),
+  logFile: path.join(process.cwd(), 'satellites', 'build-log.json'),
 };
 
 // ============================================================

@@ -16,10 +16,10 @@ const { execSync } = require('child_process');
 // ============================================================
 
 const CONFIG = {
-  satellitesDir: path.join(__dirname, '../../satellites'),
+  satellitesDir: path.join(process.cwd(), 'satellites'),
   vercelToken: process.env.VERCEL_TOKEN,
   vercelTeam: process.env.VERCEL_TEAM,
-  logFile: path.join(__dirname, '../../satellites/deploy-log.json'),
+  logFile: path.join(process.cwd(), 'satellites', 'deploy-log.json'),
 };
 
 // ============================================================

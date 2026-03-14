@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const SATELLITES_DIR = path.join(__dirname, '../../satellites');
+const SATELLITES_DIR = path.join(process.cwd(), 'satellites');
 const TEMPLATE_DIR = path.join(__dirname, '..');
 
 console.log('🔄 UPDATING SATELLITES WITH NEW FEATURES');

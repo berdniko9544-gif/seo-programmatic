@@ -20,7 +20,7 @@ const NICHES = ['crypto', 'fitness', 'education', 'realestate'];
 const BATCH_CONFIG = {
   maxParallel: 5, // Максимум параллельных генераций
   delayBetweenBatches: 2000, // 2 секунды между батчами
-  logFile: path.join(__dirname, '../../satellites/batch-log.json'),
+  logFile: path.join(process.cwd(), 'satellites', 'batch-log.json'),
 };
 
 // ============================================================

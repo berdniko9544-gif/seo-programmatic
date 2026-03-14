@@ -10,8 +10,8 @@ const path = require('path');
 const https = require('https');
 
 const CONFIG = {
-  satellitesDir: path.join(__dirname, '../../satellites'),
-  urlsFile: path.join(__dirname, '../../satellites/urls.txt'),
+  satellitesDir: path.join(process.cwd(), 'satellites'),
+  urlsFile: path.join(process.cwd(), 'satellites', 'urls.txt'),
 };
 
 class ISRTrigger {

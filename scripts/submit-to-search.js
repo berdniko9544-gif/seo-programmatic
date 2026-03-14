@@ -16,9 +16,9 @@ const https = require('https');
 // ============================================================
 
 const CONFIG = {
-  satellitesDir: path.join(__dirname, '../../satellites'),
-  urlsFile: path.join(__dirname, '../../satellites/urls.txt'),
-  logFile: path.join(__dirname, '../../satellites/seo-submission-log.json'),
+  satellitesDir: path.join(process.cwd(), 'satellites'),
+  urlsFile: path.join(process.cwd(), 'satellites', 'urls.txt'),
+  logFile: path.join(process.cwd(), 'satellites', 'seo-submission-log.json'),
 
   // Google Indexing API
   googleApiKey: process.env.GOOGLE_INDEXING_API_KEY,

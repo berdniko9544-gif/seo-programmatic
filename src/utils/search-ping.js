@@ -28,7 +28,8 @@ class SearchEnginePing {
    * Ping Google
    */
   pingGoogle(sitemapUrl) {
-    const url = `http://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
+    // Google still supports sitemap ping, but HTTPS is preferred.
+    const url = `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
     return this.makeRequest(url);
   }
 
@@ -36,7 +37,8 @@ class SearchEnginePing {
    * Ping Bing
    */
   pingBing(sitemapUrl) {
-    const url = `http://www.bing.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
+    // Bing legacy ping endpoint can return 410; IndexNow is preferred.
+    const url = `https://www.bing.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
     return this.makeRequest(url);
   }
 
@@ -44,7 +46,8 @@ class SearchEnginePing {
    * Ping Yandex
    */
   pingYandex(sitemapUrl) {
-    const url = `http://webmaster.yandex.ru/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
+    // Yandex ping endpoint supports HTTPS.
+    const url = `https://webmaster.yandex.ru/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
     return this.makeRequest(url);
   }
 

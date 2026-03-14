@@ -20,7 +20,7 @@ const CONFIG = {
   templateDir: path.join(__dirname, '..'),
 
   // Директория для новых сателлитов
-  outputDir: path.join(__dirname, '../../satellites'),
+  outputDir: path.join(process.cwd(), 'satellites'),
 
   // API ключи (из .env)
   openaiKey: process.env.OPENAI_API_KEY,
