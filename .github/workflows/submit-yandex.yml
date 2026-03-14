@@ -1,0 +1,118 @@
+name: Submit existing satellites to Yandex
+
+on:
+  workflow_dispatch:
+    inputs:
+      daily_run_id:
+        description: 'Optional: Daily Satellite Generation run ID to pull urls.txt from (e.g. 23088318282). Leave empty to use latest successful run.'
+        required: false
+        type: string
+
+env:
+  YANDEX_WEBMASTER_TOKEN: ${{ secrets.YANDEX_WEBMASTER_TOKEN }}
+  YANDEX_USER_ID: ${{ secrets.YANDEX_USER_ID }}
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve Daily run ID (latest successful if not provided)
+        id: resolve
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const input = (context.payload.inputs && context.payload.inputs.daily_run_id) ? String(context.payload.inputs.daily_run_id).trim() : '';
+            if (input) {
+              core.setOutput('run_id', input);
+              return;
+            }
+
+            // Daily Satellite Generation workflow id in this repo
+            const WORKFLOW_ID = 244675251;
+
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: WORKFLOW_ID,
+              status: 'completed',
+              per_page: 30,
+            });
+
+            const latest = (runs.data.workflow_runs || []).find(r => r.conclusion === 'success');
+            if (!latest) {
+              core.setFailed('No successful Daily Satellite Generation runs found. Provide daily_run_id input.');
+              return;
+            }
+
+            core.info(`Using latest successful daily run: ${latest.id}`);
+            core.setOutput('run_id', String(latest.id));
+
+      - name: Download satellite-registry artifact (contains satellites/urls.txt)
+        id: dl
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runId = Number('${{ steps.resolve.outputs.run_id }}');
+            const artifactsResp = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: runId,
+              per_page: 100,
+            });
+
+            const artifacts = artifactsResp.data.artifacts || [];
+            const artifact = artifacts.find(a => a.name === 'satellite-registry') || artifacts.find(a => a.name === 'generation-logs');
+
+            if (!artifact) {
+              core.setFailed(`No artifact named satellite-registry (or generation-logs) found on run ${runId}`);
+              return;
+            }
+
+            core.info(`Downloading artifact: ${artifact.name} (id ${artifact.id})`);
+
+            const download = await github.rest.actions.downloadArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: artifact.id,
+              archive_format: 'zip',
+            });
+
+            const fs = require('fs');
+            fs.writeFileSync('artifact.zip', Buffer.from(download.data));
+            core.setOutput('artifact_name', artifact.name);
+
+      - name: Extract artifact
+        run: |
+          unzip -q artifact.zip -d artifact
+          echo "Extracted artifact contents:"
+          find artifact -maxdepth 3 -type f | head -n 200
+
+      - name: Prepare urls.txt
+        run: |
+          if [ -f artifact/satellites/urls.txt ]; then
+            mkdir -p satellites
+            cp artifact/satellites/urls.txt satellites/urls.txt
+            echo "✅ Using satellites/urls.txt from artifact";
+            wc -l satellites/urls.txt || true
+            head -n 5 satellites/urls.txt || true
+          else
+            echo "❌ artifact/satellites/urls.txt not found";
+            find artifact -maxdepth 5 -type f | head -n 200
+            exit 1
+          fi
+
+      - name: Submit to Yandex Webmaster API
+        run: node scripts/submit-to-search.js
