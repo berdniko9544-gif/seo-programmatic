@@ -140,19 +140,50 @@ class SEOSubmissionManager {
 
   async submitToYandex(siteUrl, sitemapUrl) {
     // Yandex Webmaster API
-    // https://yandex.ru/dev/webmaster/doc/dg/reference/hosts-add-site.html
+    // Note: sitemap endpoints expect host_id (not hostname).
 
-    const hostname = new URL(siteUrl).hostname;
+    const normalizedSiteUrl = siteUrl.replace(/\/$/, '');
 
-    // 1. Добавляем сайт
-    await this.yandexRequest('POST', `/user/${CONFIG.yandexUserId}/hosts`, {
-      host_url: siteUrl,
-    });
+    // 1) Ensure host exists and get host_id
+    const hostId = await this.ensureYandexHost(normalizedSiteUrl);
 
-    // 2. Добавляем sitemap
-    await this.yandexRequest('POST', `/user/${CONFIG.yandexUserId}/hosts/${hostname}/sitemaps`, {
+    // 2) Add sitemap for that host
+    await this.yandexRequest('POST', `/user/${CONFIG.yandexUserId}/hosts/${encodeURIComponent(hostId)}/sitemaps`, {
       url: sitemapUrl,
     });
+  }
+
+  async ensureYandexHost(siteUrl) {
+    // Try to add host first (idempotent-ish).
+    try {
+      const created = await this.yandexRequest('POST', `/user/${CONFIG.yandexUserId}/hosts`, {
+        host_url: siteUrl,
+      });
+
+      // Typical response contains host_id.
+      if (created && (created.host_id || created.hostId)) {
+        return created.host_id || created.hostId;
+      }
+    } catch (e) {
+      // If already exists or cannot be added, we'll try to find it below.
+      // Common cases: 409 conflict, 403 needs verification, etc.
+    }
+
+    // Fallback: list hosts and find matching host_url
+    const list = await this.yandexRequest('GET', `/user/${CONFIG.yandexUserId}/hosts`);
+    const hosts = list?.hosts || list?.data || [];
+
+    const found = hosts.find(h => {
+      const url = (h.host_url || h.hostUrl || '').replace(/\/$/, '');
+      return url === siteUrl;
+    });
+
+    const hostId = found?.host_id || found?.hostId;
+    if (!hostId) {
+      throw new Error('Yandex: host_id not found for ' + siteUrl + '. Возможно сайт не добавлен/не подтвержден в Вебмастере.');
+    }
+
+    return hostId;
   }
 
   yandexRequest(method, path, body = null) {
