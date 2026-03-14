@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Resolve Daily run ID (latest successful if not provided)
+      - name: Resolve Daily run ID (latest successful with satellite-urls)
         id: resolve
         uses: actions/github-script@v7
         with:
@@ -48,17 +48,33 @@ jobs:
               repo: context.repo.repo,
               workflow_id: WORKFLOW_ID,
               status: 'completed',
-              per_page: 30,
+              per_page: 50,
             });
 
-            const latest = (runs.data.workflow_runs || []).find(r => r.conclusion === 'success');
-            if (!latest) {
+            const successes = (runs.data.workflow_runs || []).filter(r => r.conclusion === 'success');
+            if (successes.length === 0) {
               core.setFailed('No successful Daily Satellite Generation runs found. Provide daily_run_id input.');
               return;
             }
 
-            core.info(`Using latest successful daily run: ${latest.id}`);
-            core.setOutput('run_id', String(latest.id));
+            // Pick the newest successful run that actually has the 'satellite-urls' artifact.
+            for (const run of successes) {
+              const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run.id,
+                per_page: 100,
+              });
+
+              const found = (artifacts.data.artifacts || []).some(a => a.name === 'satellite-urls' && !a.expired);
+              if (found) {
+                core.info(`Using latest successful daily run with satellite-urls: ${run.id}`);
+                core.setOutput('run_id', String(run.id));
+                return;
+              }
+            }
+
+            core.setFailed('No successful Daily Satellite Generation runs with satellite-urls artifact found. Run Daily Satellite Generation (new version) once, or provide daily_run_id explicitly.');
 
       - name: Download satellite-urls artifact (satellites/urls.txt)
         uses: actions/download-artifact@v4
