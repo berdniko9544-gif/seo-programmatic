@@ -44,6 +44,22 @@ class DailySatelliteGenerator {
     this.searchPing = new SearchEnginePing();
     this.results = [];
     this.startTime = Date.now();
+    this._saving = false;
+
+    // If GitHub Actions cancels the job (timeout/manual cancel), try to persist logs.
+    const onCancel = (signal) => {
+      try {
+        console.error(`\n⚠️ Received ${signal}. Saving partial results...`);
+        this.saveResults();
+      } catch (e) {
+        console.error('Failed to save partial results:', e?.message || e);
+      } finally {
+        process.exit(1);
+      }
+    };
+
+    process.on('SIGTERM', () => onCancel('SIGTERM'));
+    process.on('SIGINT', () => onCancel('SIGINT'));
   }
 
   async run() {
@@ -203,6 +219,9 @@ class DailySatelliteGenerator {
   }
 
   saveResults() {
+    if (this._saving) return;
+    this._saving = true;
+
     const log = {
       date: new Date().toISOString(),
       target: CONFIG.dailySatellites,
@@ -214,20 +233,28 @@ class DailySatelliteGenerator {
       failed: this.results.filter(r => !r.success).length
     };
 
+    // Make sure logs exist even if we're about to be canceled.
+    // (If the process is killed after this point, upload-artifact can still find the file.)
     const logDir = path.dirname(CONFIG.logFile);
     if (!fs.existsSync(logDir)) {
       fs.mkdirSync(logDir, { recursive: true });
     }
 
-    // Append to daily log
     let logs = [];
     if (fs.existsSync(CONFIG.logFile)) {
-      logs = JSON.parse(fs.readFileSync(CONFIG.logFile, 'utf8'));
+      try {
+        logs = JSON.parse(fs.readFileSync(CONFIG.logFile, 'utf8'));
+        if (!Array.isArray(logs)) logs = [];
+      } catch {
+        logs = [];
+      }
     }
     logs.push(log);
 
     fs.writeFileSync(CONFIG.logFile, JSON.stringify(logs, null, 2));
     console.log(`\n📝 Log saved: ${CONFIG.logFile}`);
+
+    this._saving = false;
   }
 
   sleep(ms) {
