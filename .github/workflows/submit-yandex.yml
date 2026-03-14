@@ -60,59 +60,24 @@ jobs:
             core.info(`Using latest successful daily run: ${latest.id}`);
             core.setOutput('run_id', String(latest.id));
 
-      - name: Download satellite-registry artifact (contains satellites/urls.txt)
-        id: dl
-        uses: actions/github-script@v7
+      - name: Download satellite-urls artifact (satellites/urls.txt)
+        uses: actions/download-artifact@v4
         with:
-          script: |
-            const runId = Number('${{ steps.resolve.outputs.run_id }}');
-            const artifactsResp = await github.rest.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: runId,
-              per_page: 100,
-            });
+          name: satellite-urls
+          path: satellites
+          run-id: ${{ steps.resolve.outputs.run_id }}
 
-            const artifacts = artifactsResp.data.artifacts || [];
-            const artifact = artifacts.find(a => a.name === 'satellite-registry') || artifacts.find(a => a.name === 'generation-logs');
-
-            if (!artifact) {
-              core.setFailed(`No artifact named satellite-registry (or generation-logs) found on run ${runId}`);
-              return;
-            }
-
-            core.info(`Downloading artifact: ${artifact.name} (id ${artifact.id})`);
-
-            const download = await github.rest.actions.downloadArtifact({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              artifact_id: artifact.id,
-              archive_format: 'zip',
-            });
-
-            const fs = require('fs');
-            fs.writeFileSync('artifact.zip', Buffer.from(download.data));
-            core.setOutput('artifact_name', artifact.name);
-
-      - name: Extract artifact
+      - name: Verify urls.txt
         run: |
-          unzip -q artifact.zip -d artifact
-          echo "Extracted artifact contents:"
-          find artifact -maxdepth 3 -type f | head -n 200
-
-      - name: Prepare urls.txt
-        run: |
-          if [ -f artifact/satellites/urls.txt ]; then
-            mkdir -p satellites
-            cp artifact/satellites/urls.txt satellites/urls.txt
-            echo "✅ Using satellites/urls.txt from artifact";
-            wc -l satellites/urls.txt || true
-            head -n 5 satellites/urls.txt || true
-          else
-            echo "❌ artifact/satellites/urls.txt not found";
-            find artifact -maxdepth 5 -type f | head -n 200
+          if [ ! -f satellites/urls.txt ]; then
+            echo "❌ satellites/urls.txt not found in downloaded artifact"
+            ls -la satellites || true
             exit 1
           fi
+
+          echo "✅ urls.txt downloaded"
+          wc -l satellites/urls.txt || true
+          head -n 5 satellites/urls.txt || true
 
       - name: Submit to Yandex Webmaster API
         run: node scripts/submit-to-search.js

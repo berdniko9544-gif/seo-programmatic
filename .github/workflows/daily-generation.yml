@@ -60,6 +60,15 @@ jobs:
           retention-days: 30
           if-no-files-found: warn
 
+      - name: Upload satellite URLs list
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: satellite-urls
+          path: satellites/urls.txt
+          retention-days: 30
+          if-no-files-found: warn
+
       - name: Upload satellite registry (debug)
         if: always()
         uses: actions/upload-artifact@v4

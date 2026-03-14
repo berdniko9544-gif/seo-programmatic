@@ -83,7 +83,10 @@ class DailySatelliteGenerator {
       // Step 4: Submit to search engines
       await this.submitToSEO();
 
-      // Step 5: Save results
+      // Step 5: Persist deployed URLs list for external submission workflows
+      this.saveDeployedUrls();
+
+      // Step 6: Save results
       this.saveResults();
 
       const duration = ((Date.now() - this.startTime) / 1000 / 60).toFixed(2);
@@ -216,6 +219,35 @@ class DailySatelliteGenerator {
     }
 
     console.log(`\n✅ Pinged ${successfulSatellites.length} satellites`);
+  }
+
+  saveDeployedUrls() {
+    // Try to use satellites/urls.txt written by DeploymentManager (deploy-all.js)
+    // If it doesn't exist, reconstruct from this.results.
+    const urlsFile = path.join(CONFIG.satellitesDir, 'urls.txt');
+    let urls = [];
+
+    if (fs.existsSync(urlsFile)) {
+      urls = fs
+        .readFileSync(urlsFile, 'utf8')
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l && l.startsWith('http'));
+    }
+
+    if (urls.length === 0) {
+      urls = this.results
+        .filter(r => r.success && r.domain)
+        .map(r => `https://${r.domain}.vercel.app`);
+    }
+
+    // Ensure directory exists
+    if (!fs.existsSync(CONFIG.satellitesDir)) {
+      fs.mkdirSync(CONFIG.satellitesDir, { recursive: true });
+    }
+
+    fs.writeFileSync(urlsFile, urls.join('\n'));
+    console.log(`\n📝 Deployed URLs saved: ${urlsFile} (${urls.length})`);
   }
 
   saveResults() {
