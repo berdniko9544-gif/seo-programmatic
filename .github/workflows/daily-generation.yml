@@ -43,6 +43,14 @@ jobs:
           DAILY_SATELLITES: '20'
           PAGES_PER_SATELLITE: '300'
 
+      - name: Submit sitemaps to Yandex (Webmaster API)
+        # Runs even if Yandex secrets are missing; script will fall back to manual instructions
+        if: always()
+        run: node scripts/submit-to-search.js
+        env:
+          YANDEX_WEBMASTER_TOKEN: ${{ secrets.YANDEX_WEBMASTER_TOKEN }}
+          YANDEX_USER_ID: ${{ secrets.YANDEX_USER_ID }}
+
       - name: Upload generation logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -73,5 +81,5 @@ jobs:
         if: success()
         run: |
           echo "✅ Daily generation complete!"
-          echo "📊 Generated 20 satellites with 1000 pages each"
-          echo "📈 Total: 20,000 new pages"
+          echo "📊 Generated 20 satellites with 300 pages each"
+          echo "📈 Total: 6,000 new pages"
