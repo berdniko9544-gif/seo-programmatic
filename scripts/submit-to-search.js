@@ -123,6 +123,7 @@ class SEOSubmissionManager {
       } catch (error) {
         result.yandex = { success: false, method: 'api', error: error.message };
         console.log('  ⚠️ Яндекс: ошибка API, требуется ручная отправка');
+        console.log('     ' + error.message);
       }
     } else {
       console.log('  ℹ️ Яндекс: требуется ручная отправка (нет токена)');
