@@ -19,7 +19,8 @@ console.log('═'.repeat(80));
 const filesToCopy = [
   { src: 'src/utils/seo-metadata.ts', dest: 'src/utils/seo-metadata.ts' },
   { src: 'src/middleware.ts', dest: 'src/middleware.ts' },
-  { src: 'vercel.json', dest: 'vercel.json' },
+  // (removed) vercel.json is Vercel-specific
+  // { src: 'vercel.json', dest: 'vercel.json' },
   { src: 'jest.config.js', dest: 'jest.config.js' },
   { src: 'jest.setup.js', dest: 'jest.setup.js' },
   { src: 'playwright.config.ts', dest: 'playwright.config.ts' },

@@ -1,9 +1,17 @@
 #!/usr/bin/env node
 
 /**
- * Update all existing satellites with new ISR architecture
- * This script links each satellite project and redeploys with current code
+ * (DEPRECATED) Update satellites on Vercel
+ *
+ * Satellites now deploy to Cloudflare Workers.
+ * Use scripts/deploy-all.js.
  */
+
+throw new Error(
+  'scripts/update-satellites.js is deprecated (Vercel-only). Use scripts/deploy-all.js for Cloudflare deploys.'
+);
+
+/*
 
 const { execSync } = require('child_process');
 const fs = require('fs');
@@ -144,3 +152,4 @@ main().catch(error => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
+*/

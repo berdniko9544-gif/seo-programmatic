@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 
 /**
- * VERCEL DEPLOYMENT SCRIPT
- * Deploys current project to Vercel with ISR support
+ * (DEPRECATED) VERCEL DEPLOYMENT SCRIPT
+ * This repository now deploys to Cloudflare Workers via OpenNext + Wrangler.
+ * See: .github/workflows/cloudflare-deploy.yml and scripts/deploy-all.js (satellites).
+ *
+ * Keeping this file only for historical reference.
  */
 
 const { execSync } = require('child_process');
@@ -15,11 +18,19 @@ class VercelDeployer {
   }
 
   async deploy() {
+    throw new Error(
+      'scripts/deploy-current.js is deprecated. Use Cloudflare deploy workflow (.github/workflows/cloudflare-deploy.yml) instead.'
+    );
+
+    // (old implementation below kept for reference)
     console.log('🚀 Deploying to Vercel with ISR support');
+
+    /*
+
     console.log('═'.repeat(80));
 
-    // Check environment
-    this.checkEnvironment();
+    // Check environment (deprecated)
+    // this.checkEnvironment();
 
     // Build project
     console.log('\n📦 Building project...');
@@ -73,6 +84,9 @@ class VercelDeployer {
       console.error('❌ Deployment failed:', error.message);
       process.exit(1);
     }
+  }
+
+    */
   }
 
   checkEnvironment() {

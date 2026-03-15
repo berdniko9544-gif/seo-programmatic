@@ -8,7 +8,14 @@ on:
 
 env:
   DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+  SATELLITE_PARENT_DOMAIN: ${{ secrets.SATELLITE_PARENT_DOMAIN }}
+  MAIN_SITE_URL: ${{ secrets.MAIN_SITE_URL }}
+  MAIN_SITE_REVALIDATE_URL: ${{ secrets.MAIN_SITE_REVALIDATE_URL }}
+  MAIN_SITE_REVALIDATE_SECRET: ${{ secrets.MAIN_SITE_REVALIDATE_SECRET }}
+  # (Cloudflare deploy creds are not required here; this workflow only hits /api/revalidate)
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
 jobs:
   trigger-isr:

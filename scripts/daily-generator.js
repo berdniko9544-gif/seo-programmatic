@@ -28,7 +28,7 @@ const CONFIG = {
   deepseekApiKey: process.env.DEEPSEEK_API_KEY,
 
   // Important: keep everything inside the repo workspace (no ".." paths).
-  // Some CI/Vercel steps reject relative patterns like ../something.
+  // Some CI steps reject relative patterns like ../something.
   satellitesDir: path.join(process.cwd(), 'satellites'),
   logFile: path.join(process.cwd(), 'logs', 'daily-generation-log.json'),
 };
@@ -134,7 +134,10 @@ class DailySatelliteGenerator {
 
         // Register satellite for cross-linking
         const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
-        const satelliteUrl = parentDomain ? `https://${domain}.${parentDomain}` : `https://${domain}.vercel.app`;
+        if (!parentDomain) {
+          throw new Error('Missing required env: SATELLITE_PARENT_DOMAIN');
+        }
+        const satelliteUrl = `https://${domain}.${parentDomain}`;
         this.contentGenerator.registerSatellite({
           name: domain,
           domain: domain,
@@ -199,7 +202,10 @@ class DailySatelliteGenerator {
 
     for (const satellite of successfulSatellites) {
       const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
-      const baseUrl = parentDomain ? `https://${satellite.domain}.${parentDomain}` : `https://${satellite.domain}.vercel.app`;
+      if (!parentDomain) {
+        throw new Error('Missing required env: SATELLITE_PARENT_DOMAIN');
+      }
+      const baseUrl = `https://${satellite.domain}.${parentDomain}`;
       const sitemapUrl = `${baseUrl}/sitemap.xml`;
 
       try {
@@ -240,9 +246,12 @@ class DailySatelliteGenerator {
 
     if (urls.length === 0) {
       const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
+      if (!parentDomain) {
+        throw new Error('Missing required env: SATELLITE_PARENT_DOMAIN');
+      }
       urls = this.results
         .filter(r => r.success && r.domain)
-        .map(r => (parentDomain ? `https://${r.domain}.${parentDomain}` : `https://${r.domain}.vercel.app`));
+        .map(r => `https://${r.domain}.${parentDomain}`);
     }
 
     // Ensure directory exists

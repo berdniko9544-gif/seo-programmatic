@@ -1,8 +1,17 @@
 #!/usr/bin/env node
 
 /**
- * Redeploy a single satellite with new architecture
+ * (DEPRECATED) Redeploy a single satellite on Vercel
+ *
+ * Satellites now deploy to Cloudflare Workers. Use:
+ *   node scripts/deploy-all.js
  */
+
+throw new Error(
+  'scripts/redeploy-satellite.js is deprecated (Vercel-only). Use scripts/deploy-all.js for Cloudflare deploys.'
+);
+
+/*
 
 const { execSync } = require('child_process');
 const path = require('path');
@@ -39,3 +48,4 @@ try {
   console.error(`❌ Failed to redeploy ${satelliteName}:`, error.message);
   process.exit(1);
 }
+*/

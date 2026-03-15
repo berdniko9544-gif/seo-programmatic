@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-  VERCEL_TEAM: ${{ secrets.VERCEL_TEAM }}
+  MAIN_SITE_URL: ${{ secrets.MAIN_SITE_URL }}
+  SATELLITE_PARENT_DOMAIN: ${{ secrets.SATELLITE_PARENT_DOMAIN }}
 
 jobs:
   health-check:
@@ -33,23 +33,31 @@ jobs:
 
       - name: Check main site
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://seo-programmatic-main.vercel.app)
+          URL="${MAIN_SITE_URL:-https://seo-programmatic-main.vercel.app}"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
           if [ "$STATUS" != "200" ]; then
-            echo "❌ Main site is down (HTTP $STATUS)"
+            echo "❌ Main site is down: $URL (HTTP $STATUS)"
             exit 1
           fi
-          echo "✅ Main site is up (HTTP $STATUS)"
+          echo "✅ Main site is up: $URL (HTTP $STATUS)"
 
       - name: Check satellites sample
         run: |
-          SATELLITES=(
-            "https://sat-market-signal-desk-6-20260310-0.vercel.app"
-            "https://sat-creator-revenue-fiel-20260310-0.vercel.app"
-            "https://sat-market-signal-desk-5-20260310-0.vercel.app"
+          if [ -z "${SATELLITE_PARENT_DOMAIN}" ]; then
+            echo "⚠️ SATELLITE_PARENT_DOMAIN is not set; skipping satellite checks"
+            exit 0
+          fi
+
+          # Hardcoded sample satellite names (edit if you want a different sample set)
+          NAMES=(
+            "sat-market-signal-desk-6-20260310-0"
+            "sat-creator-revenue-fiel-20260310-0"
+            "sat-market-signal-desk-5-20260310-0"
           )
 
           FAILED=0
-          for URL in "${SATELLITES[@]}"; do
+          for NAME in "${NAMES[@]}"; do
+            URL="https://${NAME}.${SATELLITE_PARENT_DOMAIN}"
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
             if [ "$STATUS" != "200" ]; then
               echo "❌ Satellite down: $URL (HTTP $STATUS)"

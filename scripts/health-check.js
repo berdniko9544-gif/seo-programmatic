@@ -30,7 +30,7 @@ class HealthCheck {
     // Проверки
     this.checkNodeVersion();
     this.checkNpmPackages();
-    this.checkVercelCLI();
+    this.checkWranglerCLI();
     this.checkProjectStructure();
     this.checkScripts();
     this.checkEnvVariables();
@@ -70,12 +70,12 @@ class HealthCheck {
     }
   }
 
-  checkVercelCLI() {
+  checkWranglerCLI() {
     try {
-      execSync('vercel --version', { stdio: 'pipe' });
-      this.pass('Vercel CLI', 'Установлен ✅');
+      execSync('npx --yes wrangler --version', { stdio: 'pipe' });
+      this.pass('Wrangler CLI', 'Доступен ✅');
     } catch (error) {
-      this.fail('Vercel CLI', 'Не установлен. Запустите: npm i -g vercel');
+      this.fail('Wrangler CLI', 'Не доступен. Установите: npm i -D wrangler (или используйте npx)');
     }
   }
 
@@ -148,26 +148,40 @@ class HealthCheck {
   }
 
   checkEnvVariables() {
-    const vercelToken = process.env.VERCEL_TOKEN;
-    const vercelTeam = process.env.VERCEL_TEAM;
+    const cfToken = process.env.CLOUDFLARE_API_TOKEN;
+    const cfAccountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+    const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
+    const revalidateSecret = process.env.REVALIDATE_SECRET;
     const yandexToken = process.env.YANDEX_WEBMASTER_TOKEN;
 
-    if (vercelToken) {
-      this.pass('VERCEL_TOKEN', 'Установлен ✅');
+    if (cfToken) {
+      this.pass('CLOUDFLARE_API_TOKEN', 'Установлен ✅');
     } else {
-      this.warn('VERCEL_TOKEN', 'Не установлен (потребуется для автоматического деплоя)');
+      this.warn('CLOUDFLARE_API_TOKEN', 'Не установлен (нужен для wrangler deploy)');
     }
 
-    if (vercelTeam) {
-      this.pass('VERCEL_TEAM', 'Установлен ✅');
+    if (cfAccountId) {
+      this.pass('CLOUDFLARE_ACCOUNT_ID', 'Установлен ✅');
     } else {
-      this.warn('VERCEL_TEAM', 'Не установлен (опционально для Vercel Pro)');
+      this.warn('CLOUDFLARE_ACCOUNT_ID', 'Не установлен (нужен для wrangler deploy)');
+    }
+
+    if (parentDomain) {
+      this.pass('SATELLITE_PARENT_DOMAIN', 'Установлен ✅');
+    } else {
+      this.warn('SATELLITE_PARENT_DOMAIN', 'Не установлен (нужен для URL/route сателлитов)');
+    }
+
+    if (revalidateSecret) {
+      this.pass('REVALIDATE_SECRET', 'Установлен ✅');
+    } else {
+      this.warn('REVALIDATE_SECRET', 'Не установлен (нужен для /api/revalidate)');
     }
 
     if (yandexToken) {
       this.pass('YANDEX_WEBMASTER_TOKEN', 'Установлен ✅');
     } else {
-      this.warn('YANDEX_WEBMASTER_TOKEN', 'Не установлен (опционально для автоматической отправки в Яндекс)');
+      this.warn('YANDEX_WEBMASTER_TOKEN', 'Не установлен (опционально для отправки в Яндекс)');
     }
   }
 

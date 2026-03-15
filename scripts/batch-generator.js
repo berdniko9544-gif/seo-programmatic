@@ -179,7 +179,7 @@ class BatchGenerator {
     console.log('\n🚀 Следующие шаги:');
     console.log('1. Соберите все сателлиты:');
     console.log('   node scripts/build-all.js');
-    console.log('2. Задеплойте на Vercel:');
+    console.log('2. Задеплойте на Cloudflare Workers:');
     console.log('   node scripts/deploy-all.js');
     console.log('3. Отправьте в поисковики:');
     console.log('   node scripts/submit-to-search.js');

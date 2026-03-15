@@ -1,9 +1,19 @@
 #!/usr/bin/env node
 
 /**
- * Batch redeploy satellites with new ISR architecture
- * Updates existing satellites to support ISR and fixes build errors
+ * (DEPRECATED) Batch redeploy satellites on Vercel
+ *
+ * This repository now deploys satellites to Cloudflare Workers.
+ * Use scripts/deploy-all.js.
  */
+
+throw new Error(
+  'scripts/batch-redeploy.js is deprecated (Vercel-only). Use scripts/deploy-all.js for Cloudflare deploys.'
+);
+
+// (old implementation below kept for reference)
+
+/*
 
 const { execSync } = require('child_process');
 
@@ -85,3 +95,4 @@ main().catch(error => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
+*/

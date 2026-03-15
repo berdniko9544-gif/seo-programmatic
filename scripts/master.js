@@ -129,7 +129,7 @@ class MasterOrchestrator {
   }
 
   async runDeploymentPipeline() {
-    console.log('\n☁️ ЭТАП 3: Деплой на Vercel');
+    console.log('\n☁️ ЭТАП 3: Деплой на Cloudflare Workers');
     console.log('─'.repeat(80));
 
     const deployer = new DeploymentManager();
@@ -248,8 +248,9 @@ function printHelp() {
 
 ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ:
 
-  VERCEL_TOKEN              Токен Vercel для автоматического деплоя
-  VERCEL_TEAM               ID команды Vercel (опционально)
+  CLOUDFLARE_API_TOKEN      API Token Cloudflare (wrangler deploy)
+  CLOUDFLARE_ACCOUNT_ID     Account ID Cloudflare
+  SATELLITE_PARENT_DOMAIN   Домен для сателлитов (например: sat.example.com)
   YANDEX_WEBMASTER_TOKEN    Токен Яндекс Вебмастер
   YANDEX_USER_ID            ID пользователя Яндекс
   GOOGLE_INDEXING_API_KEY   API ключ Google Indexing

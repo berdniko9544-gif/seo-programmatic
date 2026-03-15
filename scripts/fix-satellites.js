@@ -1,15 +1,21 @@
 #!/usr/bin/env node
 
 /**
- * Fix existing satellites on Vercel
- * - Migrates old satellites to new ISR architecture
- * - Redeploys with updated configuration
- * - Fixes build errors
+ * (DEPRECATED) Fix existing satellites on Vercel
+ *
+ * This repository no longer uses Vercel. Satellites deploy to Cloudflare Workers
+ * via scripts/deploy-all.js.
+ *
+ * Keeping this script only for historical reference.
  */
 
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+
+throw new Error(
+  'scripts/fix-satellites.js is deprecated (Vercel-only). Use scripts/deploy-all.js for Cloudflare deploys.'
+);
 
 class SatelliteFixer {
   constructor() {

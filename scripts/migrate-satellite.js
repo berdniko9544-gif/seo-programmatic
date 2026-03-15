@@ -53,7 +53,7 @@ class SatelliteMigration {
     console.log('🚀 Следующие шаги:');
     console.log(`   cd ${this.satellitePath}`);
     console.log('   npm run build');
-    console.log('   vercel deploy --prod');
+    console.log('   node scripts/deploy-all.js');
 
     return true;
   }

@@ -91,7 +91,8 @@ class SatelliteGenerator {
     console.log(`📝 Следующие шаги:`);
     console.log(`   1. cd ${this.outputPath}`);
     console.log(`   2. npm run build`);
-    console.log(`   3. vercel deploy`);
+    console.log(`   3. npx @opennextjs/cloudflare build`);
+    console.log(`   4. npx wrangler deploy --config wrangler.toml --name <workerName> --route <route>`);
   }
 
   async copyTemplate() {
@@ -279,7 +280,10 @@ class SatelliteGenerator {
     const envPath = path.join(this.outputPath, '.env.local');
 
     const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
-    const siteUrl = parentDomain ? `https://${this.domain}.${parentDomain}` : `https://${this.domain}.vercel.app`;
+    if (!parentDomain) {
+      throw new Error('Missing required env: SATELLITE_PARENT_DOMAIN');
+    }
+    const siteUrl = `https://${this.domain}.${parentDomain}`;
 
     // Keep NEXT_PUBLIC_BASE_URL as an alias while the codebase migrates.
     fs.writeFileSync(
