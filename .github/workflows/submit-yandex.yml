@@ -82,6 +82,8 @@ jobs:
           name: satellite-urls
           path: satellites
           run-id: ${{ steps.resolve.outputs.run_id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify urls.txt
         run: |
