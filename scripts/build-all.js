@@ -117,8 +117,7 @@ class BuildManager {
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
       // Подсчитываем количество страниц
-      const outDir = path.join(satellite.path, 'out');
-      const pageCount = this.countPages(outDir);
+      const pageCount = this.countPages(satellite.path);
 
       this.results.push({
         name: satellite.name,
@@ -146,7 +145,24 @@ class BuildManager {
     }
   }
 
-  countPages(outDir) {
+  countPages(satellitePath) {
+    const prerenderManifestPath = path.join(satellitePath, '.next', 'prerender-manifest.json');
+    if (fs.existsSync(prerenderManifestPath)) {
+      try {
+        const prerenderManifest = JSON.parse(fs.readFileSync(prerenderManifestPath, 'utf8'));
+        const routesCount = Object.keys(prerenderManifest.routes || {}).length;
+        const dynamicRoutesCount = Object.values(prerenderManifest.dynamicRoutes || {}).reduce(
+          (sum, route) => sum + ((route?.fallbackRouteParams?.length && route.fallbackRouteParams.length) || 0),
+          0
+        );
+        const notFoundRoutes = prerenderManifest.notFoundRoutes?.length || 0;
+        return routesCount + dynamicRoutesCount + notFoundRoutes;
+      } catch {
+        // Fall through to HTML counting if the manifest is unavailable.
+      }
+    }
+
+    const outDir = path.join(satellitePath, 'out');
     if (!fs.existsSync(outDir)) return 0;
 
     let count = 0;

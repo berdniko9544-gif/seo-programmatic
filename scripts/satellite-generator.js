@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const { ContentGenerator } = require('../src/utils/content-generator');
+const { computeSatellitePublicUrl } = require('./cloudflare-worker');
 const { getSemanticBlueprint, pickTemplateFamily } = require('../src/utils/site-network-config');
 
 // ============================================================
@@ -263,11 +264,10 @@ class SatelliteGenerator {
     // РЎРѕР·РґР°С‘Рј .env.local
     const envPath = path.join(this.outputPath, '.env.local');
 
-    const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
-    if (!parentDomain) {
-      throw new Error('Missing required env: SATELLITE_PARENT_DOMAIN');
+    const siteUrl = computeSatellitePublicUrl(this.domain);
+    if (!siteUrl) {
+      throw new Error('Missing satellite public URL configuration. Set SATELLITE_PARENT_DOMAIN or CLOUDFLARE_WORKERS_SUBDOMAIN.');
     }
-    const siteUrl = `https://${this.domain}.${parentDomain}`;
     const siteMeta = this.customData?.siteMeta || {};
     const blueprint = getSemanticBlueprint(this.niche);
     const mainSiteUrl =

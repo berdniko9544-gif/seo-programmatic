@@ -13,6 +13,7 @@ const { SearchEnginePing } = require('../src/utils/search-ping');
 const { SatelliteGenerator } = require('./satellite-generator');
 const { BuildManager } = require('./build-all');
 const { DeploymentManager } = require('./deploy-all');
+const { computeSatellitePublicUrl } = require('./cloudflare-worker');
 const fs = require('fs');
 const path = require('path');
 
@@ -128,12 +129,10 @@ class DailySatelliteGenerator {
 
         await generator.generate();
 
-        const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
-        if (!parentDomain) {
-          throw new Error('Missing required env: SATELLITE_PARENT_DOMAIN');
+        const satelliteUrl = computeSatellitePublicUrl(domain);
+        if (!satelliteUrl) {
+          throw new Error('Missing satellite public URL configuration. Set SATELLITE_PARENT_DOMAIN or CLOUDFLARE_WORKERS_SUBDOMAIN.');
         }
-
-        const satelliteUrl = `https://${domain}.${parentDomain}`;
         this.contentGenerator.registerSatellite({
           name: domain,
           domain,
@@ -196,12 +195,10 @@ class DailySatelliteGenerator {
     const successfulSatellites = this.results.filter(result => result.success);
 
     for (const satellite of successfulSatellites) {
-      const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
-      if (!parentDomain) {
-        throw new Error('Missing required env: SATELLITE_PARENT_DOMAIN');
+      const baseUrl = computeSatellitePublicUrl(satellite.domain);
+      if (!baseUrl) {
+        throw new Error('Missing satellite public URL configuration. Set SATELLITE_PARENT_DOMAIN or CLOUDFLARE_WORKERS_SUBDOMAIN.');
       }
-
-      const baseUrl = `https://${satellite.domain}.${parentDomain}`;
       const sitemapUrl = `${baseUrl}/sitemap.xml`;
 
       try {
@@ -238,14 +235,10 @@ class DailySatelliteGenerator {
     }
 
     if (urls.length === 0) {
-      const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
-      if (!parentDomain) {
-        throw new Error('Missing required env: SATELLITE_PARENT_DOMAIN');
-      }
-
       urls = this.results
         .filter(result => result.success && result.domain)
-        .map(result => `https://${result.domain}.${parentDomain}`);
+        .map(result => computeSatellitePublicUrl(result.domain))
+        .filter(Boolean);
     }
 
     if (!fs.existsSync(CONFIG.satellitesDir)) {
