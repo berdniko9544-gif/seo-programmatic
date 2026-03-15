@@ -8,10 +8,7 @@ const { directions } = require('./directions');
 const { cities, audiences } = require('./locations');
 const { toolCategories } = require('./tools');
 const { yearMonths, comparisonPairs, howToArticles } = require('./content');
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://seo-programmatic-main.vercel.app";
-const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "SEO Programmatic";
-const BRAND = process.env.NEXT_PUBLIC_BRAND || "SEO Programmatic";
+const { SITE_URL, SITE_NAME, BRAND } = require('../config/site');
 
 // ============================================================
 // PAGE GENERATORS

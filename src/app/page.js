@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { Header, Footer, CtaBlock, PageJsonLd } from '@/components/shared';
 import { directions, toolCategories, audiences } from '@/data/seo-data';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+import { SITE_URL, MAIN_SITE_URL } from '@/config/site';
 
 export const metadata = {
   title: '1MB3 — Заработок на нейросетях 2026: 12 направлений, 200+ инструментов',
@@ -69,7 +68,7 @@ export default function Home() {
               <div className="stat-label">покупателей</div>
             </div>
           </div>
-          <a href={(process.env.NEXT_PUBLIC_MAIN_SITE || SITE_URL) + "#offer"} className="cta-btn" target="_blank" rel="noopener">
+          <a href={MAIN_SITE_URL + "#offer"} className="cta-btn" target="_blank" rel="noopener">
             Купить гайд — ₽ 1 990 →
           </a>
         </div>

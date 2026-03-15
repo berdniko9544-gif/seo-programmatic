@@ -50,7 +50,8 @@ class ISRTrigger {
   async triggerRevalidation(baseUrl) {
     console.log(`  Revalidating: ${baseUrl}`);
     if (!process.env.MAIN_SITE_REVALIDATE_SECRET && !process.env.REVALIDATE_SECRET) {
-      console.log('  ⚠️ No REVALIDATE_SECRET provided; request may be rejected');
+      console.log('  ⚠️ No REVALIDATE_SECRET provided; skipping request');
+      return;
     }
 
     // Trigger revalidation by hitting the revalidate API route.
@@ -59,7 +60,7 @@ class ISRTrigger {
     // - MAIN_SITE_REVALIDATE_SECRET=...
     const secret = process.env.MAIN_SITE_REVALIDATE_SECRET || process.env.REVALIDATE_SECRET;
     const endpoint = process.env.MAIN_SITE_REVALIDATE_URL || `${baseUrl}/api/revalidate`;
-    const revalidateUrl = `${endpoint}?secret=${secret || 'default-secret'}`;
+    const revalidateUrl = `${endpoint}?secret=${encodeURIComponent(secret)}`;
 
     return new Promise((resolve) => {
       https.get(revalidateUrl, (res) => {

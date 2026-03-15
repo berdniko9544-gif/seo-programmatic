@@ -1,6 +1,6 @@
-export default function robots() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+import { SITE_URL } from '@/config/site';
 
+export default function robots() {
   return {
     rules: [
       {
@@ -17,7 +17,7 @@ export default function robots() {
         allow: '/',
       },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
-    host: baseUrl,
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   };
 }

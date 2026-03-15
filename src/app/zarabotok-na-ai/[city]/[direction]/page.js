@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Header, Footer, CtaBlock, Breadcrumbs, PageJsonLd, InternalLinks } from '@/components/shared';
 import { directions, cities } from '@/data/seo-data';
+import { SITE_URL } from '@/config/site';
+import { getContentDates } from '@/config/content';
 
 export async function generateStaticParams() {
   const params = [];
@@ -14,23 +16,24 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-  const city = cities.find(c => c.slug === params.city);
-  const dir = directions.find(d => d.id === params.direction);
+  const { city: citySlug, direction: directionSlug } = await params;
+  const city = cities.find(c => c.slug === citySlug);
+  const dir = directions.find(d => d.id === directionSlug);
   if (!city || !dir) return {};
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
 
   return {
     title: `${dir.nameShort} в ${city.name} — Заработок на AI 2026`,
     description: `Как начать зарабатывать на ${dir.nameShort.toLowerCase()} в ${city.name}. Инструменты, клиенты, цены. Гайд 1MB3.`,
-    alternates: { canonical: `${siteUrl}/zarabotok-na-ai/${city.slug}/${dir.id}` },
+    alternates: { canonical: `${SITE_URL}/zarabotok-na-ai/${city.slug}/${dir.id}` },
   };
 }
 
-export default function CityDirectionPage({ params }) {
-  const city = cities.find(c => c.slug === params.city);
-  const dir = directions.find(d => d.id === params.direction);
+export default async function CityDirectionPage({ params }) {
+  const { city: citySlug, direction: directionSlug } = await params;
+  const city = cities.find(c => c.slug === citySlug);
+  const dir = directions.find(d => d.id === directionSlug);
   if (!city || !dir) return notFound();
+  const { publishedAt } = getContentDates();
 
   const schema = {
     "@context": "https://schema.org",
@@ -38,7 +41,7 @@ export default function CityDirectionPage({ params }) {
     "headline": `${dir.nameShort} в ${city.name}: как начать в 2026`,
     "description": `Заработок на ${dir.nameShort.toLowerCase()} в ${city.name}`,
     "author": { "@type": "Organization", "name": "1MB3" },
-    "datePublished": "2026-02-14",
+    "datePublished": publishedAt,
   };
 
   const otherCities = cities.filter(c => c.slug !== city.slug);

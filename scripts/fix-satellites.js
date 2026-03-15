@@ -21,7 +21,7 @@ class SatelliteFixer {
   constructor() {
     this.vercelToken = process.env.VERCEL_TOKEN;
     this.vercelTeam = process.env.VERCEL_TEAM;
-    this.revalidateSecret = process.env.REVALIDATE_SECRET || 'your_random_secret_here_change_this';
+    this.revalidateSecret = process.env.REVALIDATE_SECRET;
     this.deepseekApiKey = process.env.DEEPSEEK_API_KEY;
   }
 

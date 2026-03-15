@@ -1,37 +1,36 @@
 import { getAllPages } from '@/data/seo-data';
-
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+import { SITE_URL } from '@/config/site';
 
 export default function sitemap() {
   const allPages = getAllPages();
 
   const staticPages = [
     {
-      url: BASE_URL,
+      url: SITE_URL,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1.0
     },
     {
-      url: `${BASE_URL}/napravleniya`,
+      url: `${SITE_URL}/napravleniya`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9
     },
     {
-      url: `${BASE_URL}/instrumenty`,
+      url: `${SITE_URL}/instrumenty`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9
     },
     {
-      url: `${BASE_URL}/blog`,
+      url: `${SITE_URL}/blog`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9
     },
     {
-      url: `${BASE_URL}/sravnenie`,
+      url: `${SITE_URL}/sravnenie`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8
@@ -66,7 +65,7 @@ export default function sitemap() {
     }
 
     return {
-      url: `${BASE_URL}${page.path}`,
+      url: `${SITE_URL}${page.path}`,
       lastModified: new Date(),
       changeFrequency: changeFreq,
       priority: priority,

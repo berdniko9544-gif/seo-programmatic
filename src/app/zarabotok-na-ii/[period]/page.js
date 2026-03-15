@@ -2,26 +2,27 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Header, Footer, CtaBlock, Breadcrumbs, InternalLinks } from '@/components/shared';
 import { directions, yearMonths } from '@/data/seo-data';
+import { SITE_URL } from '@/config/site';
 
 export async function generateStaticParams() {
   return yearMonths.map(ym => ({ period: ym.slug }));
 }
 
 export async function generateMetadata({ params }) {
-  const ym = yearMonths.find(y => y.slug === params.period);
+  const { period } = await params;
+  const ym = yearMonths.find(y => y.slug === period);
   if (!ym) return {};
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
 
   return {
     title: `Заработок на ИИ ${ym.name} — Актуальные способы`,
     description: `Актуальные способы заработка на нейросетях в ${ym.name}. 12 направлений с инструментами и ценами. Гайд 1MB3.`,
-    alternates: { canonical: `${siteUrl}/zarabotok-na-ii/${ym.slug}` },
+    alternates: { canonical: `${SITE_URL}/zarabotok-na-ii/${ym.slug}` },
   };
 }
 
-export default function TimePeriodPage({ params }) {
-  const ym = yearMonths.find(y => y.slug === params.period);
+export default async function TimePeriodPage({ params }) {
+  const { period } = await params;
+  const ym = yearMonths.find(y => y.slug === period);
   if (!ym) return notFound();
 
   return (

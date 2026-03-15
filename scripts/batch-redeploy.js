@@ -18,7 +18,7 @@ throw new Error(
 const { execSync } = require('child_process');
 
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
-const VERCEL_TEAM = process.env.VERCEL_TEAM || 'berdniko9544-2708s-projects';
+const VERCEL_TEAM = process.env.VERCEL_TEAM;
 
 // Satellites with errors that need fixing
 const SATELLITES_TO_FIX = [

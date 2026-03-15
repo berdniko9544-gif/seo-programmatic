@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { Header, Footer, CtaBlock, PageJsonLd } from '@/components/shared';
 import { comparisonPairs } from '@/data/seo-data';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+import { SITE_URL } from '@/config/site';
 
 export const metadata = {
   title: 'Сравнение AI-инструментов — Что выбрать в 2026 | 1MB3',

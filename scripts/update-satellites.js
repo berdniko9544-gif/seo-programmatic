@@ -18,7 +18,7 @@ const fs = require('fs');
 const path = require('path');
 
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
-const VERCEL_TEAM = process.env.VERCEL_TEAM || 'berdniko9544-2708s-projects';
+const VERCEL_TEAM = process.env.VERCEL_TEAM;
 
 function log(message, type = 'info') {
   const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';

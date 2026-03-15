@@ -2,26 +2,27 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Header, Footer, CtaBlock, Breadcrumbs, PageJsonLd, InternalLinks } from '@/components/shared';
 import { directions, audiences } from '@/data/seo-data';
+import { SITE_URL } from '@/config/site';
 
 export async function generateStaticParams() {
   return audiences.map(a => ({ audience: a.slug }));
 }
 
 export async function generateMetadata({ params }) {
-  const aud = audiences.find(a => a.slug === params.audience);
+  const { audience } = await params;
+  const aud = audiences.find(a => a.slug === audience);
   if (!aud) return {};
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
 
   return {
     title: `Гайд по заработку на ИИ для ${aud.name} 2026`,
     description: `${aud.desc} Подробный PDF-гайд от 1MB3 с планом на 30 дней.`,
-    alternates: { canonical: `${siteUrl}/dlya/${aud.slug}` },
+    alternates: { canonical: `${SITE_URL}/dlya/${aud.slug}` },
   };
 }
 
-export default function AudiencePage({ params }) {
-  const aud = audiences.find(a => a.slug === params.audience);
+export default async function AudiencePage({ params }) {
+  const { audience } = await params;
+  const aud = audiences.find(a => a.slug === audience);
   if (!aud) return notFound();
 
   const bestDirs = {

@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { SITE_URL, SITE_NAME, DEFAULT_OG_IMAGE } from '@/config/site';
 
 interface SEOMetadataProps {
   title: string;
@@ -17,15 +18,14 @@ export function generateSEOMetadata({
   description,
   keywords = [],
   url,
-  image = '/og-image.jpg',
+  image = DEFAULT_OG_IMAGE,
   type = 'website',
   publishedTime,
   modifiedTime,
   author = 'SEO Programmatic',
 }: SEOMetadataProps): Metadata {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
-  const fullUrl = `${baseUrl}${url}`;
-  const fullImageUrl = image.startsWith('http') ? image : `${baseUrl}${image}`;
+  const fullUrl = `${SITE_URL}${url}`;
+  const fullImageUrl = image.startsWith('http') ? image : `${SITE_URL}${image}`;
 
   return {
     title,
@@ -34,7 +34,7 @@ export function generateSEOMetadata({
     authors: [{ name: author }],
     creator: author,
     publisher: author,
-    metadataBase: new URL(baseUrl),
+    metadataBase: new URL(SITE_URL),
     alternates: {
       canonical: fullUrl,
     },
@@ -42,7 +42,7 @@ export function generateSEOMetadata({
       title,
       description,
       url: fullUrl,
-      siteName: 'SEO Programmatic',
+      siteName: SITE_NAME,
       images: [
         {
           url: fullImageUrl,
@@ -93,8 +93,6 @@ export function generateJSONLD(data: {
   author?: string;
   items?: Array<{ name: string; url: string }>;
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
-
   const commonProps = {
     '@context': 'https://schema.org',
     '@type': data.type,
@@ -104,12 +102,12 @@ export function generateJSONLD(data: {
     case 'WebSite':
       return {
         ...commonProps,
-        name: data.name || 'SEO Programmatic',
+        name: data.name || SITE_NAME,
         description: data.description,
-        url: baseUrl,
+        url: SITE_URL,
         potentialAction: {
           '@type': 'SearchAction',
-          target: `${baseUrl}/search?q={search_term_string}`,
+          target: `${SITE_URL}/search?q={search_term_string}`,
           'query-input': 'required name=search_term_string',
         },
       };
@@ -117,9 +115,9 @@ export function generateJSONLD(data: {
     case 'Organization':
       return {
         ...commonProps,
-        name: data.name || 'SEO Programmatic',
-        url: baseUrl,
-        logo: data.logo ? `${baseUrl}${data.logo}` : `${baseUrl}/logo.png`,
+        name: data.name || SITE_NAME,
+        url: SITE_URL,
+        logo: data.logo ? `${SITE_URL}${data.logo}` : `${SITE_URL}/logo.png`,
         description: data.description,
       };
 
@@ -133,14 +131,14 @@ export function generateJSONLD(data: {
         dateModified: data.dateModified || data.datePublished,
         author: {
           '@type': 'Person',
-          name: data.author || 'SEO Programmatic',
+          name: data.author || SITE_NAME,
         },
         publisher: {
           '@type': 'Organization',
-          name: 'SEO Programmatic',
+          name: SITE_NAME,
           logo: {
             '@type': 'ImageObject',
-            url: `${baseUrl}/logo.png`,
+            url: `${SITE_URL}/logo.png`,
           },
         },
       };
@@ -152,7 +150,7 @@ export function generateJSONLD(data: {
           '@type': 'ListItem',
           position: index + 1,
           name: item.name,
-          item: `${baseUrl}${item.url}`,
+          item: `${SITE_URL}${item.url}`,
         })),
       };
 

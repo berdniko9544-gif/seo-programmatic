@@ -24,7 +24,7 @@ if (!satelliteName) {
 }
 
 const vercelToken = process.env.VERCEL_TOKEN;
-const vercelTeam = process.env.VERCEL_TEAM || 'berdniko9544-2708s-projects';
+const vercelTeam = process.env.VERCEL_TEAM;
 
 if (!vercelToken) {
   console.error('VERCEL_TOKEN environment variable required');

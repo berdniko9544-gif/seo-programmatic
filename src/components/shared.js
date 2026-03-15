@@ -1,6 +1,5 @@
 import Link from 'next/link';
-
-const MAIN_SITE = process.env.NEXT_PUBLIC_MAIN_SITE || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://seo-programmatic-main.vercel.app";
+import { MAIN_SITE_URL } from '@/config/site';
 
 export function Header() {
   return (
@@ -13,7 +12,7 @@ export function Header() {
           <Link href="/napravleniya" style={{ fontSize: '14px', color: '#8b8b99' }}>Направления</Link>
           <Link href="/instrumenty" style={{ fontSize: '14px', color: '#8b8b99' }}>Инструменты</Link>
           <Link href="/blog" style={{ fontSize: '14px', color: '#8b8b99' }}>Блог</Link>
-          <a href={MAIN_SITE} className="header-cta" target="_blank" rel="noopener">
+          <a href={MAIN_SITE_URL} className="header-cta" target="_blank" rel="noopener">
             Купить гайд →
           </a>
         </nav>
@@ -59,7 +58,7 @@ export function Footer() {
             <h4>О проекте</h4>
             <a href="https://t.me/Inside1mb3" target="_blank" rel="noopener">Telegram @Inside1mb3</a>
             <a href="https://www.instagram.com/inside1mb3" target="_blank" rel="noopener">Instagram</a>
-            <a href={MAIN_SITE} target="_blank" rel="noopener">Купить гайд</a>
+            <a href={MAIN_SITE_URL} target="_blank" rel="noopener">Купить гайд</a>
             <Link href="/dlya/freelancer">Для фрилансеров</Link>
             <Link href="/dlya/business">Для предпринимателей</Link>
           </div>
@@ -67,7 +66,7 @@ export function Footer() {
         <div className="footer-bottom">
           © 2026 1MB3. Все материалы защищены. Гайд является цифровым продуктом.
           <br />
-          <Link href={`${MAIN_SITE}/legal/offer`}>Оферта</Link> · <Link href={`${MAIN_SITE}/legal/privacy`}>Конфиденциальность</Link>
+          <Link href={`${MAIN_SITE_URL}/legal/offer`}>Оферта</Link> · <Link href={`${MAIN_SITE_URL}/legal/privacy`}>Конфиденциальность</Link>
         </div>
       </div>
     </footer>
@@ -83,7 +82,7 @@ export function CtaBlock({ variant = 'default' }) {
         <span className="price-old">₽ 3 990</span>
         <span className="price-new">₽ 1 990</span>
       </div>
-      <a href={MAIN_SITE + "#offer"} className="cta-btn" target="_blank" rel="noopener">
+      <a href={MAIN_SITE_URL + "#offer"} className="cta-btn" target="_blank" rel="noopener">
         Купить гайд — ₽ 1 990 →
       </a>
     </div>

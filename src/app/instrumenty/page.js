@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { Header, Footer, CtaBlock, PageJsonLd } from '@/components/shared';
 import { toolCategories } from '@/data/seo-data';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+import { SITE_URL } from '@/config/site';
 
 export const metadata = {
   title: 'Каталог 200+ AI-инструментов для заработка 2026 | 1MB3',

@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { Header, Footer, CtaBlock, PageJsonLd } from '@/components/shared';
 import { directions } from '@/data/seo-data';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+import { SITE_URL } from '@/config/site';
 
 export const metadata = {
   title: '12 направлений заработка на AI — Каталог 2026 | 1MB3',

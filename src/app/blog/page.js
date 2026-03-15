@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { Header, Footer, CtaBlock } from '@/components/shared';
 import { howToArticles } from '@/data/seo-data';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+import { SITE_URL } from '@/config/site';
+import { CONTENT_UPDATED_LABEL } from '@/config/content';
 
 export const metadata = {
   title: 'Блог о заработке на нейросетях — статьи и гайды 2026',
@@ -29,7 +29,7 @@ export default function BlogIndex() {
                   <h3>{a.title}</h3>
                   <p>{a.desc}</p>
                   <div className="card-meta">
-                    <span className="card-tag">март 2026</span>
+                    <span className="card-tag">{CONTENT_UPDATED_LABEL}</span>
                     <span className="card-tag accent">{a.readTime}</span>
                   </div>
                 </div>

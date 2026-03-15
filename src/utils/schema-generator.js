@@ -3,6 +3,8 @@
  * Generates rich structured data for better search visibility
  */
 
+const { SITE_URL } = require('../config/site');
+
 class SchemaGenerator {
   /**
    * Generate BreadcrumbList schema
@@ -52,7 +54,7 @@ class SchemaGenerator {
         "name": "1MB3",
         "logo": {
           "@type": "ImageObject",
-          "url": (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://seo-programmatic-main.vercel.app") + "/logo.png"
+          "url": `${SITE_URL}/logo.png`
         }
       },
       "image": image,

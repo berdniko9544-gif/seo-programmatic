@@ -17,8 +17,21 @@ console.log('═'.repeat(80));
 
 // Files to copy to each satellite
 const filesToCopy = [
+  { src: 'next-env.d.ts', dest: 'next-env.d.ts' },
+  { src: 'tsconfig.json', dest: 'tsconfig.json' },
+  { src: 'tsconfig.typecheck.json', dest: 'tsconfig.typecheck.json' },
+  { src: 'src/app/layout.js', dest: 'src/app/layout.js' },
+  { src: 'src/app/globals.css', dest: 'src/app/globals.css' },
+  { src: 'src/app/api/revalidate/route.js', dest: 'src/app/api/revalidate/route.js' },
+  { src: 'src/app/api/content/[slug]/route.js', dest: 'src/app/api/content/[slug]/route.js' },
+  { src: 'src/app/longtail/[slug]/page.js', dest: 'src/app/longtail/[slug]/page.js' },
+  { src: 'src/components/shared.js', dest: 'src/components/shared.js' },
+  { src: 'src/config/site.js', dest: 'src/config/site.js' },
+  { src: 'src/config/content.js', dest: 'src/config/content.js' },
+  { src: 'src/utils/rate-limit.js', dest: 'src/utils/rate-limit.js' },
+  { src: 'src/utils/revalidation.js', dest: 'src/utils/revalidation.js' },
+  { src: 'src/utils/safe-html.js', dest: 'src/utils/safe-html.js' },
   { src: 'src/utils/seo-metadata.ts', dest: 'src/utils/seo-metadata.ts' },
-  { src: 'src/middleware.ts', dest: 'src/middleware.ts' },
   // (removed) vercel.json is Vercel-specific
   // { src: 'vercel.json', dest: 'vercel.json' },
   { src: 'jest.config.js', dest: 'jest.config.js' },
@@ -36,7 +49,6 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
-  swcMinify: true,
 
   // Security headers
   async headers() {
@@ -74,7 +86,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.deepseek.com;",
+            value: "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.deepseek.com;",
           },
         ],
       },
@@ -134,6 +146,8 @@ function updateSatellite(satelliteDir) {
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
       packageJson.scripts = {
         ...packageJson.scripts,
+        dev: 'next dev --webpack',
+        typecheck: 'next typegen && tsc --noEmit -p tsconfig.typecheck.json',
         test: 'jest',
         'test:watch': 'jest --watch',
         'test:coverage': 'jest --coverage',
@@ -147,6 +161,7 @@ function updateSatellite(satelliteDir) {
         '@types/jest': '^29.5.11',
         jest: '^29.7.0',
         'jest-environment-jsdom': '^29.7.0',
+        typescript: '^5.9.3',
       };
       fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
       console.log('  ✅ Updated: package.json');

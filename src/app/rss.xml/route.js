@@ -1,25 +1,24 @@
 import { howToArticles } from '@/data/seo-data';
-
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
-const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'SEO Programmatic';
+import { SITE_URL, SITE_NAME } from '@/config/site';
+import { CONTENT_UPDATED_AT } from '@/config/content';
 
 export async function GET() {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${SITE_NAME} — Блог о заработке на AI</title>
-    <link>${BASE_URL}/blog</link>
+    <link>${SITE_URL}/blog</link>
     <description>Статьи о заработке на нейросетях и AI в 2026 году</description>
     <language>ru</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    <atom:link href="${BASE_URL}/rss.xml" rel="self" type="application/rss+xml"/>
+    <atom:link href="${SITE_URL}/rss.xml" rel="self" type="application/rss+xml"/>
     ${howToArticles.map(article => `
     <item>
       <title>${article.title}</title>
-      <link>${BASE_URL}/blog/${article.slug}</link>
+      <link>${SITE_URL}/blog/${article.slug}</link>
       <description>${article.desc}</description>
-      <pubDate>${new Date('2026-03-01').toUTCString()}</pubDate>
-      <guid>${BASE_URL}/blog/${article.slug}</guid>
+      <pubDate>${new Date(CONTENT_UPDATED_AT).toUTCString()}</pubDate>
+      <guid>${SITE_URL}/blog/${article.slug}</guid>
     </item>`).join('')}
   </channel>
 </rss>`;

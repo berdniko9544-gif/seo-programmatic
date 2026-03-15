@@ -1,8 +1,19 @@
 import './globals.css';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import PerformanceMonitor from '@/components/PerformanceMonitor';
+import { SITE_URL, SITE_NAME, DEFAULT_OG_IMAGE } from '@/config/site';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
-const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'SEO Programmatic';
+const inter = Inter({
+  subsets: ['latin', 'cyrillic'],
+  display: 'swap',
+  variable: '--font-primary',
+});
+
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ['latin', 'cyrillic'],
+  display: 'swap',
+  variable: '--font-code',
+});
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
@@ -29,7 +40,7 @@ export const metadata = {
     description: 'Programmatic SEO site.',
     images: [
       {
-        url: '/og-image.png',
+        url: DEFAULT_OG_IMAGE,
         width: 1200,
         height: 630,
         alt: SITE_NAME,
@@ -40,7 +51,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: SITE_NAME,
     description: 'Programmatic SEO site.',
-    images: ['/og-image.png'],
+    images: [DEFAULT_OG_IMAGE],
   },
   robots: {
     index: true,
@@ -96,14 +107,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ru">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
         <link rel="alternate" type="application/rss+xml" title={`${SITE_NAME} RSS`} href={`${SITE_URL}/rss.xml`} />
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
       </head>
-      <body>
+      <body className={`${inter.variable} ${jetBrainsMono.variable}`}>
         <PerformanceMonitor />
         {children}
       </body>

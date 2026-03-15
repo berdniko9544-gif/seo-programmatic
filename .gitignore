@@ -13,12 +13,15 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 *.pem
+*.tsbuildinfo
 .vscode/
 .idea/
 
 .vercel
 coverage/
 logs/
+playwright-report/
+test-results/
 
 # OpenNext build output
 .open-next/

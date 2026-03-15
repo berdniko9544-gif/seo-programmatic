@@ -2,34 +2,37 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Header, Footer, CtaBlock, Breadcrumbs, PageJsonLd, InternalLinks } from '@/components/shared';
 import { comparisonPairs } from '@/data/seo-data';
+import { SITE_URL } from '@/config/site';
+import { getContentDates } from '@/config/content';
 
 export async function generateStaticParams() {
   return comparisonPairs.map(p => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }) {
-  const pair = comparisonPairs.find(p => p.slug === params.slug);
+  const { slug } = await params;
+  const pair = comparisonPairs.find(p => p.slug === slug);
   if (!pair) return {};
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
 
   return {
     title: `${pair.a} vs ${pair.b} — Сравнение 2026`,
     description: `Подробное сравнение ${pair.a} и ${pair.b}: функции, цены, плюсы и минусы. Что выбрать для заработка в 2026?`,
-    alternates: { canonical: `${siteUrl}/sravnenie/${pair.slug}` },
+    alternates: { canonical: `${SITE_URL}/sravnenie/${pair.slug}` },
   };
 }
 
-export default function ComparisonPage({ params }) {
-  const pair = comparisonPairs.find(p => p.slug === params.slug);
+export default async function ComparisonPage({ params }) {
+  const { slug } = await params;
+  const pair = comparisonPairs.find(p => p.slug === slug);
   if (!pair) return notFound();
+  const { publishedAt } = getContentDates();
 
   const schema = {
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": `${pair.a} vs ${pair.b}: что выбрать в 2026`,
     "author": { "@type": "Organization", "name": "1MB3" },
-    "datePublished": "2026-02-14",
+    "datePublished": publishedAt,
   };
 
   return (

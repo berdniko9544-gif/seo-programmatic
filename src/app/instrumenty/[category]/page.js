@@ -2,26 +2,28 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Header, Footer, CtaBlock, Breadcrumbs, PageJsonLd, InternalLinks } from '@/components/shared';
 import { toolCategories } from '@/data/seo-data';
+import { SITE_URL } from '@/config/site';
+import { CONTENT_UPDATED_LABEL } from '@/config/content';
 
 export async function generateStaticParams() {
   return toolCategories.map(c => ({ category: c.id }));
 }
 
 export async function generateMetadata({ params }) {
-  const cat = toolCategories.find(c => c.id === params.category);
+  const { category } = await params;
+  const cat = toolCategories.find(c => c.id === category);
   if (!cat) return {};
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
 
   return {
     title: `${cat.name} — Каталог ИИ-сервисов 2026`,
     description: `Полный каталог ${cat.name.toLowerCase()} с ценами и описаниями. ${cat.tools.map(t=>t.name).join(', ')} и другие.`,
-    alternates: { canonical: `${siteUrl}/instrumenty/${cat.id}` },
+    alternates: { canonical: `${SITE_URL}/instrumenty/${cat.id}` },
   };
 }
 
-export default function ToolCatalogPage({ params }) {
-  const cat = toolCategories.find(c => c.id === params.category);
+export default async function ToolCatalogPage({ params }) {
+  const { category } = await params;
+  const cat = toolCategories.find(c => c.id === category);
   if (!cat) return notFound();
 
   const schema = {
@@ -54,7 +56,7 @@ export default function ToolCatalogPage({ params }) {
       <section className="hero">
         <div className="container">
           <h1>{cat.icon} {cat.name}</h1>
-          <p>Каталог {cat.tools.length} сервисов с ценами, описаниями и рейтингами. Обновлено: март 2026.</p>
+          <p>Каталог {cat.tools.length} сервисов с ценами, описаниями и рейтингами. Обновлено: {CONTENT_UPDATED_LABEL}.</p>
         </div>
       </section>
 

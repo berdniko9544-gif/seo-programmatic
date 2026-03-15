@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Header, Footer, CtaBlock, Breadcrumbs, PageJsonLd, InternalLinks } from '@/components/shared';
 import { directions, generateHowToPages } from '@/data/seo-data';
+import { SITE_URL, MAIN_SITE_URL } from '@/config/site';
+import { getContentDates, CONTENT_UPDATED_LABEL } from '@/config/content';
 
 const howToPages = generateHowToPages();
 
@@ -51,44 +53,51 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-  const page = howToPages.find(p => p.slug === params.slug);
+  const { slug } = await params;
+  const page = howToPages.find(p => p.slug === slug);
   if (!page) return {};
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+  const { publishedAt, updatedAt } = getContentDates({
+    publishedAt: page.publishedAt,
+    updatedAt: page.updatedAt,
+  });
 
   return {
     title: page.title.replace(' | 1MB3', ''),
     description: page.description,
-    alternates: { canonical: `${siteUrl}/blog/${page.slug}` },
+    alternates: { canonical: `${SITE_URL}/blog/${page.slug}` },
     openGraph: {
       title: page.title,
       description: page.description,
       type: 'article',
-      publishedTime: '2026-02-14T00:00:00Z',
+      publishedTime: publishedAt,
+      modifiedTime: updatedAt,
       authors: ['1MB3'],
     },
   };
 }
 
-export default function BlogArticle({ params }) {
-  const page = howToPages.find(p => p.slug === params.slug);
+export default async function BlogArticle({ params }) {
+  const { slug } = await params;
+  const page = howToPages.find(p => p.slug === slug);
   if (!page) return notFound();
 
-  const content = articleContent[params.slug] || defaultContent;
-  const otherArticles = howToPages.filter(p => p.slug !== params.slug).slice(0, 6);
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+  const content = articleContent[slug] || defaultContent;
+  const otherArticles = howToPages.filter(p => p.slug !== slug).slice(0, 6);
+  const { publishedAt, updatedAt } = getContentDates({
+    publishedAt: page.publishedAt,
+    updatedAt: page.updatedAt,
+  });
 
   const schema = {
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": page.h1,
     "description": page.description,
-    "author": { "@type": "Organization", "name": "1MB3", "url": process.env.NEXT_PUBLIC_MAIN_SITE || siteUrl },
+    "author": { "@type": "Organization", "name": "1MB3", "url": MAIN_SITE_URL },
     "publisher": { "@type": "Organization", "name": "1MB3" },
-    "datePublished": "2026-02-14",
-    "dateModified": "2026-03-01",
-    "mainEntityOfPage": `${siteUrl}/blog/${page.slug}`,
+    "datePublished": publishedAt,
+    "dateModified": updatedAt,
+    "mainEntityOfPage": `${SITE_URL}/blog/${page.slug}`,
   };
 
   return (
@@ -105,7 +114,7 @@ export default function BlogArticle({ params }) {
           <h1>{page.h1}</h1>
           <p>{page.description}</p>
           <div style={{ fontSize: '13px', color: '#8b8b99', marginTop: '12px' }}>
-            Автор: 1MB3 · Обновлено: март 2026 · 5 мин чтения
+            Автор: 1MB3 · Обновлено: {CONTENT_UPDATED_LABEL} · {page.readTime || '5 мин'}
           </div>
         </div>
       </section>

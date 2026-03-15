@@ -1,7 +1,20 @@
 module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  testPathIgnorePatterns: ['/node_modules/', '/.next/', '/tests/e2e/'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/.next/',
+    '/tests/e2e/',
+    '/.claude/',
+    '/.open-next/',
+    '/test-results/',
+    '/playwright-report/',
+  ],
+  modulePathIgnorePatterns: [
+    '<rootDir>/.claude/',
+    '<rootDir>/.open-next/',
+    '<rootDir>/test-results/',
+  ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },

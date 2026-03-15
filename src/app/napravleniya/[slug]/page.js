@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Header, Footer, CtaBlock, Breadcrumbs, PageJsonLd, InternalLinks } from '@/components/shared';
 import { directions, cities } from '@/data/seo-data';
+import { SITE_URL } from '@/config/site';
+import { getContentDates } from '@/config/content';
 
 // Enable ISR - revalidate every 6 hours
 export const revalidate = 21600;
@@ -11,26 +13,27 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-  const dir = directions.find(d => d.id === params.slug);
+  const { slug } = await params;
+  const dir = directions.find(d => d.id === slug);
   if (!dir) return {};
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
 
   return {
     title: `${dir.name} — Заработок на ИИ в 2026`,
     description: `${dir.description}. Инструменты: ${dir.tools.join(', ')}. Цены: ${dir.priceRange}. Гайд 1MB3.`,
-    alternates: { canonical: `${siteUrl}/napravleniya/${dir.id}` },
+    alternates: { canonical: `${SITE_URL}/napravleniya/${dir.id}` },
     openGraph: {
       title: `${dir.name} — Заработок 2026 | 1MB3`,
       description: dir.description,
-      url: `${siteUrl}/napravleniya/${dir.id}`,
+      url: `${SITE_URL}/napravleniya/${dir.id}`,
     },
   };
 }
 
-export default function DirectionPage({ params }) {
-  const dir = directions.find(d => d.id === params.slug);
+export default async function DirectionPage({ params }) {
+  const { slug } = await params;
+  const dir = directions.find(d => d.id === slug);
   if (!dir) return notFound();
+  const { publishedAt, updatedAt } = getContentDates();
 
   const schema = {
     "@context": "https://schema.org",
@@ -39,8 +42,8 @@ export default function DirectionPage({ params }) {
     "description": dir.description,
     "author": { "@type": "Organization", "name": "1MB3" },
     "publisher": { "@type": "Organization", "name": "1MB3" },
-    "datePublished": "2026-02-14",
-    "dateModified": "2026-03-01",
+    "datePublished": publishedAt,
+    "dateModified": updatedAt,
   };
 
   const faqSchema = {

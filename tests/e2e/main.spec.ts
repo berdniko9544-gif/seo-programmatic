@@ -49,9 +49,10 @@ test.describe('Main Site', () => {
     const startTime = Date.now();
     await page.goto('/');
     const loadTime = Date.now() - startTime;
+    const maxLoadTime = process.env.CI ? 3000 : 5000;
 
-    // Page should load in less than 3 seconds
-    expect(loadTime).toBeLessThan(3000);
+    // Local dev runs pay a cold-compile cost; keep the stricter budget in CI.
+    expect(loadTime).toBeLessThan(maxLoadTime);
   });
 });
 
