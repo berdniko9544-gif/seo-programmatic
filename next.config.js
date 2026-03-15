@@ -10,7 +10,11 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
-  swcMinify: true,
+
+  // Next.js 16 removed swcMinify (SWC minification is always-on / managed internally).
+
+  // Turbopack is enabled by default in Next.js 16. We rely on a custom webpack config
+  // for chunk splitting, so force Webpack via `next build --webpack`.
 
   // Security headers
   async headers() {
@@ -55,9 +59,7 @@ const nextConfig = {
     ];
   },
 
-  // ISR is enabled by default in Next.js 14+
-
-  // Optimize bundle
+  // Optimize bundle (Webpack)
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.optimization.splitChunks = {
@@ -75,6 +77,6 @@ const nextConfig = {
     }
     return config;
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
