@@ -1,0 +1,21 @@
+name = "seo-programmatic-main"
+compatibility_date = "2025-03-01"
+
+# OpenNext output
+main = ".open-next/worker.js"
+
+# OpenNext uses Node built-ins; enable Node.js compatibility.
+compatibility_flags = ["nodejs_compat"]
+
+# account_id is provided via env (CLOUDFLARE_ACCOUNT_ID) in CI.
+
+[vars]
+# Keep non-sensitive defaults only. Secrets should be configured in Cloudflare as Worker secrets.
+# Static assets produced by OpenNext
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# Limits (optional)
+# [limits]
+# cpu_ms = 50
