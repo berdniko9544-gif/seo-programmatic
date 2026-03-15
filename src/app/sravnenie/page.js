@@ -2,10 +2,12 @@ import Link from 'next/link';
 import { Header, Footer, CtaBlock, PageJsonLd } from '@/components/shared';
 import { comparisonPairs } from '@/data/seo-data';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
 export const metadata = {
   title: 'Сравнение AI-инструментов — Что выбрать в 2026 | 1MB3',
   description: 'Детальные сравнения популярных нейросетей: ChatGPT vs Claude, Midjourney vs DALL-E, n8n vs Make и другие.',
-  alternates: { canonical: 'https://1mb3-seo.vercel.app/sravnenie' },
+  alternates: { canonical: `${SITE_URL}/sravnenie` },
 };
 
 export default function ComparisonsIndex() {
@@ -17,7 +19,7 @@ export default function ComparisonsIndex() {
       "@type": "ListItem",
       "position": index + 1,
       "name": `${pair.a} vs ${pair.b}`,
-      "url": `https://1mb3-seo.vercel.app/sravnenie/${pair.slug}`
+      "url": `${SITE_URL}/sravnenie/${pair.slug}`
     }))
   };
 

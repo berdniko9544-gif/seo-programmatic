@@ -1,7 +1,7 @@
 import { howToArticles } from '@/data/seo-data';
 
-const BASE_URL = 'https://1mb3-seo.vercel.app';
-const SITE_NAME = '1MB3 — ГАЙД 2026';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'SEO Programmatic';
 
 export async function GET() {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>

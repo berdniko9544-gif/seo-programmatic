@@ -2,10 +2,12 @@ import Link from 'next/link';
 import { Header, Footer, CtaBlock, PageJsonLd } from '@/components/shared';
 import { toolCategories } from '@/data/seo-data';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
 export const metadata = {
   title: 'Каталог 200+ AI-инструментов для заработка 2026 | 1MB3',
   description: 'Полный каталог нейросетей и AI-сервисов с ценами, рейтингами и описаниями. Инструменты для текста, изображений, видео, аудио, кода.',
-  alternates: { canonical: 'https://1mb3-seo.vercel.app/instrumenty' },
+  alternates: { canonical: `${SITE_URL}/instrumenty` },
 };
 
 export default function ToolsIndex() {
@@ -17,7 +19,7 @@ export default function ToolsIndex() {
       "@type": "ListItem",
       "position": index + 1,
       "name": cat.name,
-      "url": `https://1mb3-seo.vercel.app/instrumenty/${cat.id}`
+      "url": `${SITE_URL}/instrumenty/${cat.id}`
     }))
   };
 

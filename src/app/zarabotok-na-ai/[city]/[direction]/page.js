@@ -17,10 +17,13 @@ export async function generateMetadata({ params }) {
   const city = cities.find(c => c.slug === params.city);
   const dir = directions.find(d => d.id === params.direction);
   if (!city || !dir) return {};
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
   return {
     title: `${dir.nameShort} в ${city.name} — Заработок на AI 2026`,
     description: `Как начать зарабатывать на ${dir.nameShort.toLowerCase()} в ${city.name}. Инструменты, клиенты, цены. Гайд 1MB3.`,
-    alternates: { canonical: `https://1mb3-seo.vercel.app/zarabotok-na-ai/${city.slug}/${dir.id}` },
+    alternates: { canonical: `${siteUrl}/zarabotok-na-ai/${city.slug}/${dir.id}` },
   };
 }
 

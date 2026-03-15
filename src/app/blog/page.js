@@ -2,10 +2,12 @@ import Link from 'next/link';
 import { Header, Footer, CtaBlock } from '@/components/shared';
 import { howToArticles } from '@/data/seo-data';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
 export const metadata = {
   title: 'Блог о заработке на нейросетях — статьи и гайды 2026',
   description: 'Бесплатные статьи о заработке на AI: ChatGPT, Midjourney, нейросетевые профессии, удалённая работа, автоматизация. От команды 1MB3.',
-  alternates: { canonical: 'https://1mb3-seo.vercel.app/blog' },
+  alternates: { canonical: `${SITE_URL}/blog` },
 };
 
 export default function BlogIndex() {

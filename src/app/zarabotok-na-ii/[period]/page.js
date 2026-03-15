@@ -10,10 +10,13 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const ym = yearMonths.find(y => y.slug === params.period);
   if (!ym) return {};
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
   return {
     title: `Заработок на ИИ ${ym.name} — Актуальные способы`,
     description: `Актуальные способы заработка на нейросетях в ${ym.name}. 12 направлений с инструментами и ценами. Гайд 1MB3.`,
-    alternates: { canonical: `https://1mb3-seo.vercel.app/zarabotok-na-ii/${ym.slug}` },
+    alternates: { canonical: `${siteUrl}/zarabotok-na-ii/${ym.slug}` },
   };
 }
 

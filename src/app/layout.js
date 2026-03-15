@@ -1,43 +1,45 @@
 import './globals.css';
 import PerformanceMonitor from '@/components/PerformanceMonitor';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'SEO Programmatic';
+
 export const metadata = {
-  metadataBase: new URL('https://1mb3-seo.vercel.app'),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: '1MB3 — ГАЙД 2026: Заработок на нейросетях и AI | 12 направлений',
-    template: '%s | 1MB3 ГАЙД 2026',
+    default: `${SITE_NAME}`,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: 'Полный гайд по заработку на нейросетях в 2026 году для РФ/СНГ. 12 направлений монетизации, 200+ инструментов, план на 30 дней. PDF + шаблоны.',
-  keywords: ['заработок на нейросетях', 'заработок на ai', 'нейросети для заработка', 'гайд по ai 2026', 'монетизация нейросетей', 'chatgpt заработок', 'midjourney заработок', 'ai фриланс', 'удалённая работа ai', 'искусственный интеллект заработок'],
-  authors: [{ name: '1MB3' }],
-  creator: '1MB3',
-  publisher: '1MB3',
+  description: 'Programmatic SEO site.',
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   alternates: {
-    canonical: 'https://1mb3-seo.vercel.app',
+    canonical: SITE_URL,
     types: {
-      'application/rss+xml': 'https://1mb3-seo.vercel.app/rss.xml',
+      'application/rss+xml': `${SITE_URL}/rss.xml`,
     },
   },
   openGraph: {
     type: 'website',
     locale: 'ru_RU',
-    url: 'https://1mb3-seo.vercel.app',
-    siteName: '1MB3 — ГАЙД 2026',
-    title: '1MB3 — ГАЙД 2026: Полный цикл заработка на ИИ',
-    description: '12 направлений монетизации AI, 200+ инструментов, план на 30 дней. Для РФ/СНГ.',
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: 'Programmatic SEO site.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: '1MB3 ГАЙД 2026 — Заработок на нейросетях',
+        alt: SITE_NAME,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: '1MB3 — ГАЙД 2026: Заработок на нейросетях',
-    description: '12 направлений монетизации AI для РФ/СНГ. PDF-гайд + шаблоны + каталог 200+ сервисов.',
+    title: SITE_NAME,
+    description: 'Programmatic SEO site.',
     images: ['/og-image.png'],
   },
   robots: {
@@ -70,9 +72,9 @@ export default function RootLayout({ children }) {
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "1MB3",
-    "url": "https://1mb3-guide-2026.vercel.app",
-    "logo": "https://1mb3-guide-2026.vercel.app/logo.png",
+    "name": SITE_NAME,
+    "url": SITE_URL,
+    "logo": `${SITE_URL}/logo.png`,
     "sameAs": [
       "https://t.me/Inside1mb3",
       "https://www.instagram.com/inside1mb3"
@@ -83,22 +85,21 @@ export default function RootLayout({ children }) {
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "1MB3 — ГАЙД 2026",
-    "url": "https://1mb3-guide-2026.vercel.app",
+    "name": SITE_NAME,
+    "url": SITE_URL,
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://1mb3-seo.vercel.app/blog?q={search_term_string}",
+      "target": `${SITE_URL}/blog?q={search_term_string}`,
       "query-input": "required name=search_term_string"
     }
   };
-
   return (
     <html lang="ru">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-        <link rel="alternate" type="application/rss+xml" title="1MB3 Blog RSS" href="https://1mb3-seo.vercel.app/rss.xml" />
+        <link rel="alternate" type="application/rss+xml" title={`${SITE_NAME} RSS`} href={`${SITE_URL}/rss.xml`} />
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
       </head>

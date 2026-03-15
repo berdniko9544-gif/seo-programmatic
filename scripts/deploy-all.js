@@ -2,10 +2,21 @@
 
 /**
  * AUTOMATED DEPLOYMENT SCRIPT
- * Деплоит все сателлиты на Vercel
+ * Deploys all satellites to Cloudflare Workers (OpenNext)
  *
  * Usage: node deploy-all.js
  */
+
+// Required env:
+// - CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID (wrangler)
+// - SATELLITE_PARENT_DOMAIN (used to compute route + public URL)
+//
+// Optional:
+// - REVALIDATE_SECRET / etc (passed via wrangler --var if desired)
+//
+// Note: requires wildcard DNS + Cloudflare Workers Routes for <sat>.<domain>/*
+// (wrangler deploy uses --route to attach routes automatically).
+
 
 const fs = require('fs');
 const path = require('path');
@@ -17,10 +28,46 @@ const { execSync } = require('child_process');
 
 const CONFIG = {
   satellitesDir: path.join(process.cwd(), 'satellites'),
-  vercelToken: process.env.VERCEL_TOKEN,
-  vercelTeam: process.env.VERCEL_TEAM,
+  satelliteParentDomain: process.env.SATELLITE_PARENT_DOMAIN,
   logFile: path.join(process.cwd(), 'satellites', 'deploy-log.json'),
 };
+
+function requireEnv(name) {
+  if (!process.env[name]) {
+    throw new Error(`Missing required env: ${name}`);
+  }
+}
+
+function computePublicUrl(satelliteName) {
+  if (!CONFIG.satelliteParentDomain) {
+    throw new Error('Missing required env: SATELLITE_PARENT_DOMAIN');
+  }
+  return `https://${satelliteName}.${CONFIG.satelliteParentDomain}`;
+}
+
+function makeWorkerName(satelliteName) {
+  // Cloudflare Worker script name length limit is 63.
+  const prefix = 'seo-sat-';
+  const safe = satelliteName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+  const max = 63 - prefix.length;
+  return prefix + safe.slice(0, max);
+}
+
+function buildWranglerVars() {
+  const vars = [];
+  const maybe = [
+    'REVALIDATE_SECRET',
+    'DEEPSEEK_API_KEY',
+    'YANDEX_WEBMASTER_TOKEN',
+    'YANDEX_USER_ID',
+  ];
+  for (const k of maybe) {
+    if (process.env[k]) {
+      vars.push(`--var ${k}:${process.env[k]}`);
+    }
+  }
+  return vars.join(' ');
+}
 
 // ============================================================
 // DEPLOYMENT MANAGER
@@ -32,24 +79,30 @@ class DeploymentManager {
   }
 
   async deployAll() {
-    console.log('🚀 Автоматический деплой всех сателлитов на Vercel');
+    console.log('🚀 Автоматический деплой всех сателлитов на Cloudflare Workers (OpenNext)');
     console.log('');
 
-    // Проверяем наличие Vercel CLI
-    if (!this.checkVercelCLI()) {
-      console.error('❌ Vercel CLI не установлен');
-      console.log('Установите: npm i -g vercel');
+    try {
+      requireEnv('SATELLITE_PARENT_DOMAIN');
+    } catch (e) {
+      console.error('❌', e.message);
       process.exit(1);
     }
 
-    // Проверяем токен
-    if (!CONFIG.vercelToken) {
-      console.warn('⚠️ VERCEL_TOKEN не установлен');
-      console.log('Получите токен: https://vercel.com/account/tokens');
-      console.log('Установите: export VERCEL_TOKEN=your_token');
-      console.log('');
-      console.log('Продолжаем с интерактивной авторизацией...');
+    // Check wrangler availability
+    if (!this.checkWranglerCLI()) {
+      console.error('❌ Wrangler CLI не установлен');
+      console.log('Установите: npm i -D wrangler (или используйте npx wrangler)');
+      process.exit(1);
     }
+
+    if (!process.env.CLOUDFLARE_API_TOKEN || !process.env.CLOUDFLARE_ACCOUNT_ID) {
+      console.warn('⚠️ CLOUDFLARE_API_TOKEN/CLOUDFLARE_ACCOUNT_ID не установлены');
+      console.warn('   В CI это должно приходить из GitHub secrets.');
+    }
+
+    console.log(`🌐 Домен сателлитов: *.${CONFIG.satelliteParentDomain}`);
+    console.log('');
 
     // Получаем список сателлитов
     const satellites = this.getSatellites();
@@ -82,9 +135,9 @@ class DeploymentManager {
     this.printURLs();
   }
 
-  checkVercelCLI() {
+  checkWranglerCLI() {
     try {
-      execSync('vercel --version', { stdio: 'ignore' });
+      execSync('npx --yes wrangler --version', { stdio: 'ignore' });
       return true;
     } catch {
       return false;
@@ -112,43 +165,50 @@ class DeploymentManager {
     const startTime = Date.now();
 
     try {
-      // Шаг 1: Сборка
-      console.log('  📦 Сборка...');
+      const workerName = makeWorkerName(satellite.name);
+      const publicUrl = computePublicUrl(satellite.name);
+      const route = `${satellite.name}.${CONFIG.satelliteParentDomain}/*`;
+
+      // Step 1: Next build
+      console.log('  📦 Next build...');
       execSync('npm run build', {
         cwd: satellite.path,
-        stdio: 'pipe',
+        stdio: 'inherit',
       });
 
-      // Шаг 2: Деплой на Vercel
-      console.log('  ☁️ Загрузка на Vercel...');
-
-      const vercelCmd = CONFIG.vercelToken
-        ? `vercel --prod --token=${CONFIG.vercelToken} --yes`
-        : 'vercel --prod --yes';
-
-      const output = execSync(vercelCmd, {
+      // Step 2: OpenNext bundle
+      console.log('  🧩 OpenNext build...');
+      execSync('npx --yes @opennextjs/cloudflare build', {
         cwd: satellite.path,
-        encoding: 'utf8',
+        stdio: 'inherit',
       });
 
-      // Извлекаем URL из вывода
-      const urlMatch = output.match(/https:\/\/[^\s]+/);
-      const url = urlMatch ? urlMatch[0] : null;
+      // Step 3: Deploy via wrangler
+      console.log(`  ☁️ Deploying Worker: ${workerName}`);
+      console.log(`  🧭 Route: ${route}`);
+
+      const vars = buildWranglerVars();
+      const deployCmd = `npx --yes wrangler deploy --config wrangler.toml --name ${workerName} --route ${route} ${vars}`;
+
+      execSync(deployCmd, {
+        cwd: satellite.path,
+        stdio: 'inherit',
+      });
 
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
       this.results.push({
         name: satellite.name,
-        url,
+        url: publicUrl,
+        workerName,
+        route,
         success: true,
         duration,
         timestamp: new Date().toISOString(),
       });
 
       console.log(`  ✅ Готово за ${duration}s`);
-      if (url) {
-        console.log(`  🌐 URL: ${url}`);
-      }
+      console.log(`  🌐 URL: ${publicUrl}`);
     } catch (error) {
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
@@ -164,6 +224,11 @@ class DeploymentManager {
       console.error(`  ❌ Ошибка: ${error.message}`);
     }
   }
+
+  // (legacy duplicate deployAll block removed)
+
+  // (intentionally empty)
+
 
   saveLog() {
     const log = {

@@ -52,7 +52,7 @@ class SchemaGenerator {
         "name": "1MB3",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://1mb3-seo.vercel.app/logo.png"
+          "url": (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://seo-programmatic-main.vercel.app") + "/logo.png"
         }
       },
       "image": image,

@@ -13,14 +13,17 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const dir = directions.find(d => d.id === params.slug);
   if (!dir) return {};
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
   return {
     title: `${dir.name} — Заработок на ИИ в 2026`,
     description: `${dir.description}. Инструменты: ${dir.tools.join(', ')}. Цены: ${dir.priceRange}. Гайд 1MB3.`,
-    alternates: { canonical: `https://1mb3-seo.vercel.app/napravleniya/${dir.id}` },
+    alternates: { canonical: `${siteUrl}/napravleniya/${dir.id}` },
     openGraph: {
       title: `${dir.name} — Заработок 2026 | 1MB3`,
       description: dir.description,
-      url: `https://1mb3-seo.vercel.app/napravleniya/${dir.id}`,
+      url: `${siteUrl}/napravleniya/${dir.id}`,
     },
   };
 }

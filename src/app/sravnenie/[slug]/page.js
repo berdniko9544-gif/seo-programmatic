@@ -10,10 +10,13 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const pair = comparisonPairs.find(p => p.slug === params.slug);
   if (!pair) return {};
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
   return {
     title: `${pair.a} vs ${pair.b} — Сравнение 2026`,
     description: `Подробное сравнение ${pair.a} и ${pair.b}: функции, цены, плюсы и минусы. Что выбрать для заработка в 2026?`,
-    alternates: { canonical: `https://1mb3-seo.vercel.app/sravnenie/${pair.slug}` },
+    alternates: { canonical: `${siteUrl}/sravnenie/${pair.slug}` },
   };
 }
 

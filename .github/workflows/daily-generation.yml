@@ -8,10 +8,15 @@ on:
 
 env:
   DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-  VERCEL_TEAM: ${{ secrets.VERCEL_TEAM }}
+  # Cloudflare deploy
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  # Domain for satellites (e.g. sat.example.com)
+  SATELLITE_PARENT_DOMAIN: ${{ secrets.SATELLITE_PARENT_DOMAIN }}
+  # Optional SEO submission
   YANDEX_WEBMASTER_TOKEN: ${{ secrets.YANDEX_WEBMASTER_TOKEN }}
   YANDEX_USER_ID: ${{ secrets.YANDEX_USER_ID }}
+  REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
 
 jobs:
   generate-satellites:
@@ -31,15 +36,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel
 
-      - name: Generate satellites with AI content
+      - name: Generate satellites with AI content + build + deploy
         run: node scripts/daily-generator.js
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_TEAM: ${{ secrets.VERCEL_TEAM }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SATELLITE_PARENT_DOMAIN: ${{ secrets.SATELLITE_PARENT_DOMAIN }}
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
           DAILY_SATELLITES: '20'
           PAGES_PER_SATELLITE: '300'
 
@@ -92,3 +97,5 @@ jobs:
           echo "✅ Daily generation complete!"
           echo "📊 Generated 20 satellites with 300 pages each"
           echo "📈 Total: 6,000 new pages"
+          echo "🌐 Satellite domain: *.${SATELLITE_PARENT_DOMAIN}"
+          echo "☁️ Deployed to Cloudflare Workers (OpenNext)"

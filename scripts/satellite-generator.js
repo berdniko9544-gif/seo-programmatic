@@ -277,7 +277,19 @@ class SatelliteGenerator {
 
     // Создаём .env.local
     const envPath = path.join(this.outputPath, '.env.local');
-    fs.writeFileSync(envPath, `NEXT_PUBLIC_SITE_URL=https://${this.domain}.vercel.app\nNEXT_PUBLIC_SITE_NAME=${this.niche} Guide\n`);
+
+    const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
+    const siteUrl = parentDomain ? `https://${this.domain}.${parentDomain}` : `https://${this.domain}.vercel.app`;
+
+    // Keep NEXT_PUBLIC_BASE_URL as an alias while the codebase migrates.
+    fs.writeFileSync(
+      envPath,
+      [
+        `NEXT_PUBLIC_SITE_URL=${siteUrl}`,
+        `NEXT_PUBLIC_BASE_URL=${siteUrl}`,
+        `NEXT_PUBLIC_SITE_NAME=${this.niche} Guide`,
+      ].join('\n') + '\n'
+    );
   }
 
   async installDependencies() {

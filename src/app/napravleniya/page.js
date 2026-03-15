@@ -2,10 +2,12 @@ import Link from 'next/link';
 import { Header, Footer, CtaBlock, PageJsonLd } from '@/components/shared';
 import { directions } from '@/data/seo-data';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
 export const metadata = {
   title: '12 направлений заработка на AI — Каталог 2026 | 1MB3',
   description: 'Полный каталог направлений заработка на нейросетях: от AI-фото до автоматизации. Инструменты, цены, сложность, план старта.',
-  alternates: { canonical: 'https://1mb3-seo.vercel.app/napravleniya' },
+  alternates: { canonical: `${SITE_URL}/napravleniya` },
 };
 
 export default function DirectionsIndex() {
@@ -17,7 +19,7 @@ export default function DirectionsIndex() {
       "@type": "ListItem",
       "position": index + 1,
       "name": dir.name,
-      "url": `https://1mb3-seo.vercel.app/napravleniya/${dir.id}`
+      "url": `${SITE_URL}/napravleniya/${dir.id}`
     }))
   };
 

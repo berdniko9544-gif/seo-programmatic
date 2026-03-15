@@ -23,7 +23,7 @@ export function generateSEOMetadata({
   modifiedTime,
   author = 'SEO Programmatic',
 }: SEOMetadataProps): Metadata {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
   const fullUrl = `${baseUrl}${url}`;
   const fullImageUrl = image.startsWith('http') ? image : `${baseUrl}${image}`;
 
@@ -93,7 +93,7 @@ export function generateJSONLD(data: {
   author?: string;
   items?: Array<{ name: string; url: string }>;
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
 
   const commonProps = {
     '@context': 'https://schema.org',

@@ -53,10 +53,13 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const page = howToPages.find(p => p.slug === params.slug);
   if (!page) return {};
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
   return {
     title: page.title.replace(' | 1MB3', ''),
     description: page.description,
-    alternates: { canonical: `https://1mb3-seo.vercel.app/blog/${page.slug}` },
+    alternates: { canonical: `${siteUrl}/blog/${page.slug}` },
     openGraph: {
       title: page.title,
       description: page.description,
@@ -74,16 +77,18 @@ export default function BlogArticle({ params }) {
   const content = articleContent[params.slug] || defaultContent;
   const otherArticles = howToPages.filter(p => p.slug !== params.slug).slice(0, 6);
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
   const schema = {
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": page.h1,
     "description": page.description,
-    "author": { "@type": "Organization", "name": "1MB3", "url": "https://1mb3-guide-2026.vercel.app" },
+    "author": { "@type": "Organization", "name": "1MB3", "url": process.env.NEXT_PUBLIC_MAIN_SITE || siteUrl },
     "publisher": { "@type": "Organization", "name": "1MB3" },
     "datePublished": "2026-02-14",
     "dateModified": "2026-03-01",
-    "mainEntityOfPage": `https://1mb3-seo.vercel.app/blog/${page.slug}`,
+    "mainEntityOfPage": `${siteUrl}/blog/${page.slug}`,
   };
 
   return (

@@ -2,10 +2,12 @@ import Link from 'next/link';
 import { Header, Footer, CtaBlock, PageJsonLd } from '@/components/shared';
 import { directions, toolCategories, audiences } from '@/data/seo-data';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
 export const metadata = {
   title: '1MB3 — Заработок на нейросетях 2026: 12 направлений, 200+ инструментов',
   description: 'Полный гайд по заработку на AI и нейросетях в 2026 году. 12 направлений монетизации, каталог 200+ сервисов, план на 30 дней. Для РФ/СНГ.',
-  alternates: { canonical: 'https://1mb3-seo.vercel.app' },
+  alternates: { canonical: SITE_URL },
 };
 
 export default function Home() {
@@ -67,7 +69,7 @@ export default function Home() {
               <div className="stat-label">покупателей</div>
             </div>
           </div>
-          <a href="https://1mb3-guide-2026.vercel.app#offer" className="cta-btn" target="_blank" rel="noopener">
+          <a href={(process.env.NEXT_PUBLIC_MAIN_SITE || SITE_URL) + "#offer"} className="cta-btn" target="_blank" rel="noopener">
             Купить гайд — ₽ 1 990 →
           </a>
         </div>

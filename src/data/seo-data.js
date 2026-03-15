@@ -9,9 +9,9 @@ const { cities, audiences } = require('./locations');
 const { toolCategories } = require('./tools');
 const { yearMonths, comparisonPairs, howToArticles } = require('./content');
 
-const SITE_URL = "https://1mb3-guide-2026.vercel.app";
-const SITE_NAME = "1MB3 — ГАЙД 2026";
-const BRAND = "1MB3";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://seo-programmatic-main.vercel.app";
+const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "SEO Programmatic";
+const BRAND = process.env.NEXT_PUBLIC_BRAND || "SEO Programmatic";
 
 // ============================================================
 // PAGE GENERATORS

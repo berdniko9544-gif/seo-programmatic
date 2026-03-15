@@ -133,7 +133,8 @@ class DailySatelliteGenerator {
         await generator.generate();
 
         // Register satellite for cross-linking
-        const satelliteUrl = `https://${domain}.vercel.app`;
+        const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
+        const satelliteUrl = parentDomain ? `https://${domain}.${parentDomain}` : `https://${domain}.vercel.app`;
         this.contentGenerator.registerSatellite({
           name: domain,
           domain: domain,
@@ -182,7 +183,7 @@ class DailySatelliteGenerator {
   }
 
   async deploySatellites() {
-    console.log('\n☁️ STEP 3: Deploying to Vercel');
+    console.log('\n☁️ STEP 3: Deploying to Cloudflare Workers');
     console.log('─'.repeat(80));
 
     const deployer = new DeploymentManager();
@@ -197,7 +198,9 @@ class DailySatelliteGenerator {
     const successfulSatellites = this.results.filter(r => r.success);
 
     for (const satellite of successfulSatellites) {
-      const sitemapUrl = `https://${satellite.domain}.vercel.app/sitemap.xml`;
+      const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
+      const baseUrl = parentDomain ? `https://${satellite.domain}.${parentDomain}` : `https://${satellite.domain}.vercel.app`;
+      const sitemapUrl = `${baseUrl}/sitemap.xml`;
 
       try {
         console.log(`📡 Pinging search engines for ${satellite.domain}...`);
@@ -236,9 +239,10 @@ class DailySatelliteGenerator {
     }
 
     if (urls.length === 0) {
+      const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
       urls = this.results
         .filter(r => r.success && r.domain)
-        .map(r => `https://${r.domain}.vercel.app`);
+        .map(r => (parentDomain ? `https://${r.domain}.${parentDomain}` : `https://${r.domain}.vercel.app`));
     }
 
     // Ensure directory exists

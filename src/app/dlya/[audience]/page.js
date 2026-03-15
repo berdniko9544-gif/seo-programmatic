@@ -10,10 +10,13 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const aud = audiences.find(a => a.slug === params.audience);
   if (!aud) return {};
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
   return {
     title: `Гайд по заработку на ИИ для ${aud.name} 2026`,
     description: `${aud.desc} Подробный PDF-гайд от 1MB3 с планом на 30 дней.`,
-    alternates: { canonical: `https://1mb3-seo.vercel.app/dlya/${aud.slug}` },
+    alternates: { canonical: `${siteUrl}/dlya/${aud.slug}` },
   };
 }
 

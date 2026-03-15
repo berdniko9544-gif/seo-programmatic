@@ -10,10 +10,13 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const cat = toolCategories.find(c => c.id === params.category);
   if (!cat) return {};
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://seo-programmatic-main.vercel.app';
+
   return {
     title: `${cat.name} — Каталог ИИ-сервисов 2026`,
     description: `Полный каталог ${cat.name.toLowerCase()} с ценами и описаниями. ${cat.tools.map(t=>t.name).join(', ')} и другие.`,
-    alternates: { canonical: `https://1mb3-seo.vercel.app/instrumenty/${cat.id}` },
+    alternates: { canonical: `${siteUrl}/instrumenty/${cat.id}` },
   };
 }
 

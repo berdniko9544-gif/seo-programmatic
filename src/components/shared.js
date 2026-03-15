@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-const MAIN_SITE = "https://1mb3-guide-2026.vercel.app";
+const MAIN_SITE = process.env.NEXT_PUBLIC_MAIN_SITE || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://seo-programmatic-main.vercel.app";
 
 export function Header() {
   return (
