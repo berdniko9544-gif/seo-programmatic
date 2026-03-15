@@ -7,7 +7,7 @@ class LongTailGenerator {
   /**
    * Generate long-tail variations
    */
-  static generateVariations(baseKeyword, niche) {
+  static generateVariations(baseKeyword, niche, options = {}) {
     const variations = [];
 
     // Question modifiers
@@ -40,6 +40,19 @@ class LongTailGenerator {
       'vs', 'или', 'лучше чем', 'против',
       'сравнение', 'разница между'
     ];
+
+    const commercialModifiers = [
+      'для бизнеса', 'для фриланса', 'для агентства', 'под клиента',
+      'с примерами оффера', 'с кейсами', 'с ценами', 'для продаж'
+    ];
+
+    const problemModifiers = [
+      'без опыта', 'с нуля', 'без команды', 'с минимальным бюджетом',
+      'если нет клиентов', 'если нужно быстро', 'для первой продажи'
+    ];
+
+    const audiences = options.audienceKeywords || [];
+    const services = options.serviceKeywords || [];
 
     // Generate question-based variations
     questions.forEach(q => {
@@ -88,85 +101,120 @@ class LongTailGenerator {
       });
     });
 
+    commercialModifiers.forEach(modifier => {
+      variations.push({
+        keyword: `${baseKeyword} ${modifier}`,
+        type: 'commercial',
+        priority: 0.96
+      });
+    });
+
+    problemModifiers.forEach(modifier => {
+      variations.push({
+        keyword: `${baseKeyword} ${modifier}`,
+        type: 'problem',
+        priority: 0.94
+      });
+    });
+
+    audiences.slice(0, 4).forEach(audience => {
+      variations.push({
+        keyword: `${baseKeyword} для ${audience}`,
+        type: 'audience',
+        priority: 0.9
+      });
+    });
+
+    services.slice(0, 4).forEach(service => {
+      variations.push({
+        keyword: `${baseKeyword} ${service}`,
+        type: 'service',
+        priority: 0.88
+      });
+    });
+
     return variations;
   }
 
   /**
    * Generate niche-specific long-tail keywords
    */
-  static generateNicheKeywords(niche) {
+  static generateNicheKeywords(niche, options = {}) {
     const templates = {
-      crypto: [
-        'заработок на криптовалюте',
-        'торговля криптой',
-        'майнинг биткоина',
-        'стейкинг криптовалюты',
-        'NFT заработок',
-        'DeFi инвестиции'
+      'ai-copywriting': [
+        'chatgpt для заработка',
+        'ai-копирайтинг',
+        'seo статьи на нейросетях',
+        'контент для telegram на ai',
+        'продающие тексты с chatgpt',
+        'ai контент для бизнеса'
       ],
-      fitness: [
-        'программа тренировок',
-        'похудение',
-        'набор мышечной массы',
-        'домашние тренировки',
-        'питание для спортсменов',
-        'фитнес для начинающих'
+      'ai-design': [
+        'midjourney для бизнеса',
+        'ai-дизайн для маркетплейсов',
+        'визуалы на нейросетях',
+        'ai баннеры',
+        'брендинг с ai',
+        'карточки товаров на ai'
       ],
-      education: [
-        'онлайн обучение',
-        'курсы программирования',
-        'изучение языков',
-        'дистанционное образование',
-        'профессиональные курсы',
-        'самообразование'
+      'ai-automation': [
+        'ai автоматизация бизнеса',
+        'ai агент для продаж',
+        'n8n с chatgpt',
+        'боты для заявок',
+        'автоматизация процессов нейросетями',
+        'ai workflow для бизнеса'
       ],
-      realestate: [
-        'покупка квартиры',
-        'ипотека',
-        'инвестиции в недвижимость',
-        'аренда жилья',
-        'продажа недвижимости',
-        'оценка квартиры'
+      'ai-marketing': [
+        'ai маркетинг',
+        'нейросети для рекламы',
+        'ai лидогенерация',
+        'smm на нейросетях',
+        'ai креативы для таргета',
+        'контент-воронка на ai'
       ],
-      finance: [
-        'инвестиции',
-        'пассивный доход',
-        'финансовая грамотность',
-        'накопления',
-        'кредиты',
-        'страхование'
+      'ai-video': [
+        'ai видео для бизнеса',
+        'reels на нейросетях',
+        'видеоаватары для продаж',
+        'ai озвучка роликов',
+        'короткие ролики с ai',
+        'видеопродакшн на нейросетях'
       ],
-      tech: [
-        'новые технологии',
-        'гаджеты',
-        'программное обеспечение',
-        'IT решения',
-        'цифровизация',
-        'автоматизация'
+      'ai-business': [
+        'ai услуги для бизнеса',
+        'внедрение нейросетей в компанию',
+        'ai сопровождение бизнеса',
+        'чат-боты для бизнеса',
+        'автоматизация бизнеса с ai',
+        'ai отдел продаж'
       ],
-      health: [
-        'здоровый образ жизни',
-        'правильное питание',
-        'профилактика заболеваний',
-        'витамины',
-        'медицинские услуги',
-        'здоровье'
+      'ai-freelance': [
+        'как заработать на ai',
+        'ai фриланс',
+        'первый клиент на нейросетях',
+        'ai услуги без опыта',
+        'удаленная работа с ai',
+        'как продавать ai услуги'
       ],
-      business: [
-        'открытие бизнеса',
-        'бизнес идеи',
-        'маркетинг',
-        'продажи',
-        'управление бизнесом',
-        'стартап'
+      'ai-education': [
+        'курс по нейросетям',
+        'гайд по ai',
+        'обучение chatgpt',
+        'инфопродукт по ai',
+        'вебинар по нейросетям',
+        'обучение ai для бизнеса'
       ]
     };
 
-    const baseKeywords = templates[niche] || templates.business;
+    const baseKeywords = [
+      ...(templates[niche] || templates['ai-business']),
+      ...((options.seedKeywords || []).slice(0, 8))
+    ];
     const allVariations = [];
 
-    baseKeywords.forEach(keyword => {
-      const variations = this.generateVariations(keyword, niche);
+    [...new Set(baseKeywords)].forEach(keyword => {
+      const variations = this.generateVariations(keyword, niche, options);
       allVariations.push(...variations);
     });
 

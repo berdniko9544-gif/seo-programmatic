@@ -1,7 +1,8 @@
 import './globals.css';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import PerformanceMonitor from '@/components/PerformanceMonitor';
-import { SITE_URL, SITE_NAME, DEFAULT_OG_IMAGE } from '@/config/site';
+import { SITE_URL, SITE_NAME, DEFAULT_OG_IMAGE, SITE_VERTICAL } from '@/config/site';
+import { siteProfile } from '@/config/site-profile';
 
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
@@ -80,38 +81,49 @@ function JsonLd({ data }) {
 }
 
 export default function RootLayout({ children }) {
+  const themeStyle = Object.fromEntries(
+    Object.entries(siteProfile.theme).map(([key, value]) => [`--${key}`, value])
+  );
+
   const organizationSchema = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": SITE_NAME,
-    "url": SITE_URL,
-    "logo": `${SITE_URL}/logo.png`,
-    "sameAs": [
-      "https://t.me/Inside1mb3",
-      "https://www.instagram.com/inside1mb3"
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: SITE_NAME,
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.png`,
+    sameAs: [
+      'https://t.me/Inside1mb3',
+      'https://www.instagram.com/inside1mb3',
     ],
-    "description": "AI×Business: инструменты, кейсы, стратегии монетизации AI для РФ/СНГ"
+    description: `${siteProfile.nicheLabel}: инструменты, кейсы и сценарии монетизации AI для РФ и СНГ`,
   };
 
   const websiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": SITE_NAME,
-    "url": SITE_URL,
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": `${SITE_URL}/blog?q={search_term_string}`,
-      "query-input": "required name=search_term_string"
-    }
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE_NAME,
+    url: SITE_URL,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${SITE_URL}/blog?q={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
   };
+
   return (
     <html lang="ru">
       <head>
         <link rel="alternate" type="application/rss+xml" title={`${SITE_NAME} RSS`} href={`${SITE_URL}/rss.xml`} />
+        <meta name="theme-color" content={siteProfile.theme.accent} />
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
       </head>
-      <body className={`${inter.variable} ${jetBrainsMono.variable}`}>
+      <body
+        className={`${inter.variable} ${jetBrainsMono.variable}`}
+        data-template-family={siteProfile.id}
+        data-site-vertical={SITE_VERTICAL}
+        style={themeStyle}
+      >
         <PerformanceMonitor />
         {children}
       </body>

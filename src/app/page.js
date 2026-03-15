@@ -1,44 +1,64 @@
 import Link from 'next/link';
-import { Header, Footer, CtaBlock, PageJsonLd } from '@/components/shared';
+import {
+  Header,
+  Footer,
+  CtaBlock,
+  PageJsonLd,
+  FamilyBrief,
+  MainSiteResourceLinks,
+} from '@/components/shared';
 import { directions, toolCategories, audiences } from '@/data/seo-data';
-import { SITE_URL, MAIN_SITE_URL } from '@/config/site';
+import { SITE_URL, MAIN_SITE_URL, IS_SATELLITE } from '@/config/site';
+import { siteProfile } from '@/config/site-profile';
+
+const heroTitle = IS_SATELLITE
+  ? `${siteProfile.nicheLabel}: рабочие AI-сценарии и точки монетизации`
+  : 'Заработок на нейросетях в 2026 году: полный гайд';
+
+const heroDescription = IS_SATELLITE
+  ? `Этот кластер собирает страницы по теме "${siteProfile.nicheLabel.toLowerCase()}": long-tail запросы, маршруты по услугам, инструменты и переходы в основной сайт 1MB3.`
+  : '12 направлений монетизации AI, каталог 200+ инструментов, план действий на 30 дней и шаблоны для старта в РФ и СНГ.';
 
 export const metadata = {
-  title: '1MB3 — Заработок на нейросетях 2026: 12 направлений, 200+ инструментов',
-  description: 'Полный гайд по заработку на AI и нейросетях в 2026 году. 12 направлений монетизации, каталог 200+ сервисов, план на 30 дней. Для РФ/СНГ.',
+  title: heroTitle,
+  description: heroDescription,
   alternates: { canonical: SITE_URL },
 };
 
 export default function Home() {
   const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
       {
-        "@type": "Question",
-        "name": "Как заработать на нейросетях в 2026 году?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Существует 12 основных направлений: AI-фото для бизнеса, AI-копирайтинг, чат-боты, AI-видео, AI-дизайн, AI-озвучка, инфопродукты, AI-маркетинг, создание сайтов, аналитика, переводы и автоматизация процессов."
-        }
+        '@type': 'Question',
+        name: IS_SATELLITE
+          ? `Как использовать кластер "${siteProfile.nicheLabel}" для поиска клиентов?`
+          : 'Как заработать на нейросетях в 2026 году?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: IS_SATELLITE
+            ? 'Используйте long-tail страницы для захвата узких запросов, ведите читателя в хабовые страницы по направлениям и переводите коммерческий трафик в основной сайт 1MB3, где собраны офферы, инструменты и сценарии продаж.'
+            : 'Сейчас лучше всего работают 12 направлений: AI-фото, копирайтинг, боты, видео, дизайн, озвучка, инфопродукты, маркетинг, сайты, аналитика, переводы и автоматизация процессов.',
+        },
       },
       {
-        "@type": "Question",
-        "name": "Сколько можно заработать на AI?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Доход зависит от направления и опыта. Средние чеки: AI-фото от 5 000 ₽/проект, AI-боты от 10 000 ₽, AI-автоматизация от 30 000 ₽. Опытные специалисты зарабатывают от 100 000 ₽/мес."
-        }
+        '@type': 'Question',
+        name: 'Есть ли перелинковка между страницами и главным хабом?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Да. Страницы связаны через тематические кластеры, внутренние подборки, CTA-блоки и ссылки на главный сайт 1MB3 по релевантным направлениям и инструментам.',
+        },
       },
       {
-        "@type": "Question",
-        "name": "С чего начать заработок на нейросетях?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "1. Выберите одно направление из 12. 2. Изучите инструменты (каталог 200+ сервисов). 3. Соберите портфолио из 3-5 работ. 4. Найдите первого клиента за 7 дней по нашему чек-листу."
-        }
-      }
-    ]
+        '@type': 'Question',
+        name: 'Как расширяется семантика сайта?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Семантика расширяется за счёт long-tail запросов, геозапросов, сравнений инструментов, аудиторных страниц, статей по интентам и периодически обновляемых хабов.',
+        },
+      },
+    ],
   };
 
   return (
@@ -48,37 +68,41 @@ export default function Home() {
 
       <section className="hero">
         <div className="container">
-          <h1>Заработок на нейросетях в 2026 году: полный гайд</h1>
-          <p>12 направлений монетизации AI, каталог 200+ инструментов, план действий на 30 дней и шаблоны для старта. Для РФ/СНГ.</p>
+          <span className="eyebrow">{siteProfile.eyebrow}</span>
+          <h1>{heroTitle}</h1>
+          <p>{heroDescription}</p>
           <div className="stats-row">
             <div className="stat-item">
-              <div className="stat-number">12</div>
+              <div className="stat-number">{directions.length}</div>
               <div className="stat-label">направлений</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">200+</div>
+              <div className="stat-number">{toolCategories.reduce((sum, category) => sum + category.tools.length, 0)}+</div>
               <div className="stat-label">инструментов</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">30</div>
-              <div className="stat-label">дней план</div>
+              <div className="stat-number">{siteProfile.semanticPillars.length}</div>
+              <div className="stat-label">семантических ядер</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">1 200+</div>
-              <div className="stat-label">покупателей</div>
+              <div className="stat-number">{IS_SATELLITE ? 'Hub' : '1MB3'}</div>
+              <div className="stat-label">{IS_SATELLITE ? 'маршрут в основной сайт' : 'главный хаб'}</div>
             </div>
           </div>
-          <a href={MAIN_SITE_URL + "#offer"} className="cta-btn" target="_blank" rel="noopener">
-            Купить гайд — ₽ 1 990 →
+          <a href={IS_SATELLITE ? `${MAIN_SITE_URL}/#offer` : '#offer'} className="cta-btn">
+            {siteProfile.ctaButton} →
           </a>
         </div>
       </section>
 
-      {/* DIRECTIONS */}
+      <FamilyBrief />
+
       <section className="section">
         <div className="container">
-          <h2 className="section-title">12 направлений заработка на AI</h2>
-          <p className="section-subtitle">Каждое направление — отдельная ниша с инструментами, ценами и планом старта</p>
+          <h2 className="section-title">Кластеры направлений</h2>
+          <p className="section-subtitle">
+            Каждое направление работает как хаб: собирает спрос, усиливает перелинковку и ведёт к релевантным сценариям монетизации.
+          </p>
           <div className="cards-grid">
             {directions.map(dir => (
               <Link key={dir.id} href={`/napravleniya/${dir.id}`} style={{ textDecoration: 'none' }}>
@@ -98,21 +122,22 @@ export default function Home() {
         </div>
       </section>
 
-      {/* TOOL CATEGORIES */}
       <section className="section" style={{ background: 'rgba(17,17,21,0.5)' }}>
         <div className="container">
-          <h2 className="section-title">Каталог 200+ AI-инструментов</h2>
-          <p className="section-subtitle">Сервисы для каждого направления с ценами и рейтингами</p>
+          <h2 className="section-title">Каталог AI-инструментов</h2>
+          <p className="section-subtitle">
+            Стек сервисов для текста, изображений, видео, автоматизации и разработки, который помогает закрывать задачи и расширять семантику сайта.
+          </p>
           <div className="cards-grid">
-            {toolCategories.map(cat => (
-              <Link key={cat.id} href={`/instrumenty/${cat.id}`} style={{ textDecoration: 'none' }}>
+            {toolCategories.map(category => (
+              <Link key={category.id} href={`/instrumenty/${category.id}`} style={{ textDecoration: 'none' }}>
                 <div className="card">
-                  <span className="card-icon">{cat.icon}</span>
-                  <h3>{cat.name}</h3>
-                  <p>{cat.tools.length} сервисов с ценами и описаниями</p>
+                  <span className="card-icon">{category.icon}</span>
+                  <h3>{category.name}</h3>
+                  <p>{category.tools.length} сервисов с описаниями, ценами и точками применения.</p>
                   <div className="card-meta">
-                    {cat.tools.slice(0, 3).map(t => (
-                      <span key={t.name} className="card-tag">{t.name}</span>
+                    {category.tools.slice(0, 3).map(tool => (
+                      <span key={tool.name} className="card-tag">{tool.name}</span>
                     ))}
                   </div>
                 </div>
@@ -122,17 +147,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* AUDIENCES */}
       <section className="section">
         <div className="container">
-          <h2 className="section-title">Для кого этот гайд</h2>
-          <p className="section-subtitle">Выберите вашу ситуацию — мы покажем, что внутри</p>
+          <h2 className="section-title">Для кого этот хаб</h2>
+          <p className="section-subtitle">
+            Подбор входа в AI по роли: фриланс, бизнес, обучение, маркетинг, разработка и запуск услуг.
+          </p>
           <div className="cards-grid">
-            {audiences.map(a => (
-              <Link key={a.slug} href={`/dlya/${a.slug}`} style={{ textDecoration: 'none' }}>
+            {audiences.map(audience => (
+              <Link key={audience.slug} href={`/dlya/${audience.slug}`} style={{ textDecoration: 'none' }}>
                 <div className="card">
-                  <h3>Для {a.name}</h3>
-                  <p>{a.desc}</p>
+                  <h3>Для {audience.name}</h3>
+                  <p>{audience.desc}</p>
                 </div>
               </Link>
             ))}
@@ -140,30 +166,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* POPULAR ARTICLES */}
-      <section className="section" style={{ background: 'rgba(17,17,21,0.5)' }}>
-        <div className="container">
-          <h2 className="section-title">Популярные статьи</h2>
-          <p className="section-subtitle">Бесплатные материалы по заработку на нейросетях</p>
-          <div className="cards-grid">
-            {[
-              { slug: "kak-zarabotat-na-neirosetiah", title: "Как заработать на нейросетях в 2026 году", desc: "12 проверенных способов с примерами и ценами" },
-              { slug: "zarabotok-na-chatgpt", title: "Заработок на ChatGPT — 10 способов", desc: "От копирайтинга до AI-агентов" },
-              { slug: "luchshie-neiroset-dlya-zarabotka", title: "Лучшие нейросети для заработка", desc: "Рейтинг инструментов по категориям" },
-              { slug: "pervyy-zakazchik-za-7-dney", title: "Первый клиент за 7 дней", desc: "Пошаговый чек-лист для быстрого старта" },
-              { slug: "udalennaya-rabota-na-ai", title: "Удалённая работа на AI", desc: "Где искать заказы и клиентов" },
-              { slug: "neirosetvye-professii-2026", title: "Нейросетевые профессии 2026", desc: "Новые специальности и вакансии" },
-            ].map(article => (
-              <Link key={article.slug} href={`/blog/${article.slug}`} style={{ textDecoration: 'none' }}>
-                <div className="card">
-                  <h3>{article.title}</h3>
-                  <p>{article.desc}</p>
-                </div>
-              </Link>
-            ))}
+      {IS_SATELLITE && (
+        <section className="section" style={{ background: 'rgba(17,17,21,0.5)' }}>
+          <div className="container">
+            <h2 className="section-title">Хабовые маршруты в 1MB3</h2>
+            <p className="section-subtitle">
+              Релевантные ссылки на основной сайт, которые собирают коммерческий интент, офферы и конверсионные сценарии.
+            </p>
+            <MainSiteResourceLinks />
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="section">
         <div className="container">

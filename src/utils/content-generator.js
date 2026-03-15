@@ -1,6 +1,7 @@
 // ============================================================
 // CONTENT GENERATION SERVICE
-// Generates unique content for satellites using DeepSeek API
+// Generates semantically relevant satellite data around the
+// main AI monetization hub and keeps page volume predictable.
 // ============================================================
 
 const { DeepSeekClient } = require('../utils/deepseek');
@@ -12,39 +13,71 @@ const { ContentFreshnessManager } = require('../utils/content-freshness');
 const { ContentOptimizer } = require('../utils/content-optimizer');
 const { SitemapGenerator } = require('../utils/sitemap-generator');
 const { RobotsGenerator } = require('../utils/robots-generator');
-const fs = require('fs');
-const path = require('path');
+const { directions: baseDirections } = require('../data/directions');
+const { toolCategories: baseToolCategories } = require('../data/tools');
+const { audiences: baseAudiences } = require('../data/locations');
+const { comparisonPairs: baseComparisonPairs, yearMonths: baseYearMonths } = require('../data/content');
+const {
+  buildPageBudget,
+  getSemanticBlueprint,
+  pickTemplateFamily,
+} = require('./site-network-config');
 
 class ContentGenerator {
   constructor(apiKey, registry = null) {
-    this.client = new DeepSeekClient(apiKey);
+    this.client = apiKey ? new DeepSeekClient(apiKey) : null;
     this.cache = new Map();
     this.registry = registry || new SatelliteRegistry();
-    this.linkingEngine = null; // Will be initialized after pages are generated
+    this.linkingEngine = null;
   }
 
-  async generateSatelliteData(niche, satelliteNumber, pagesCount = 1000) {
-    console.log(`🎨 Generating unique data for satellite #${satelliteNumber} (${niche})`);
+  async generateSatelliteData(niche, satelliteNumber, pagesCount = 300) {
+    const blueprint = getSemanticBlueprint(niche);
+    const pageBudget = buildPageBudget(pagesCount);
 
-    // Generate unique directions
-    const directions = await this.generateDirections(niche, 15);
+    console.log(
+      `Generating semantic data for satellite #${satelliteNumber} (${niche})`
+    );
+    console.log(
+      `Estimated page mix: ~${pageBudget.estimatedTotal} pages (${pageBudget.longTail} long-tail)`
+    );
 
-    // Generate cities (expand to support 1000 pages)
-    const cities = this.generateCities(100);
+    const directions = await this.generateDirections(
+      niche,
+      blueprint,
+      pageBudget.directions
+    );
+    const cities = this.generateCities(pageBudget.cities);
+    const tools = this.generateTools(blueprint, pageBudget);
+    const articles = this.generateArticles(blueprint, pageBudget.articles);
+    const audiences = this.generateAudiences(blueprint, pageBudget.audiences);
+    const comparisonPairs = this.generateComparisons(
+      directions,
+      blueprint,
+      pageBudget.comparisons
+    );
+    const yearMonths = this.generateYearMonths(pageBudget.periods);
+    const longTailPages = this.generateLongTailPages(
+      niche,
+      blueprint,
+      pageBudget.longTail,
+      directions,
+      articles,
+      audiences
+    );
 
-    // Generate tools
-    const tools = await this.generateTools(niche, 200);
+    const allPages = this.collectAllPages({
+      directions,
+      cities,
+      tools,
+      articles,
+      longTailPages,
+      audiences,
+      comparisonPairs,
+      yearMonths,
+      niche,
+    });
 
-    // Generate articles
-    const articles = await this.generateArticles(niche, 50);
-
-    // Generate long-tail pages (MASSIVE traffic boost)
-    const longTailPages = this.generateLongTailPages(niche, 300);
-
-    // Collect all pages for internal linking
-    const allPages = this.collectAllPages(directions, articles, longTailPages, niche);
-
-    // Initialize internal linking engine
     this.linkingEngine = new InternalLinkingEngine(allPages);
 
     return {
@@ -53,214 +86,308 @@ class ContentGenerator {
       tools,
       articles,
       longTailPages,
-      audiences: this.generateAudiences(),
-      comparisonPairs: this.generateComparisons(directions),
+      audiences,
+      comparisonPairs,
+      yearMonths,
       allPages,
+      pageBudget,
+      siteMeta: {
+        niche,
+        nicheLabel: blueprint.label,
+        templateFamily: pickTemplateFamily(satelliteNumber, niche),
+        siteName: `1MB3 ${blueprint.label}`,
+        brand: '1MB3',
+      },
     };
   }
 
-  async generateDirections(niche, count = 15) {
-    const directions = [];
-    const baseDirections = this.getBaseDirections(niche);
+  async generateDirections(niche, blueprint, count = 10) {
+    const ids = blueprint.directionIds.slice(0, count);
 
-    for (let i = 0; i < count; i++) {
-      const baseDirection = baseDirections[i % baseDirections.length];
+    return ids.map((directionId, index) => {
+      const base =
+        baseDirections.find(item => item.id === directionId) ||
+        baseDirections[index % baseDirections.length];
+      const audience =
+        blueprint.audienceSlugs[index % blueprint.audienceSlugs.length];
+      const seedKeyword =
+        blueprint.seedKeywords[index % blueprint.seedKeywords.length];
 
-      try {
-        const generated = await this.client.generateUniqueDirection(
-          baseDirection,
-          i + 1
-        );
-
-        if (generated) {
-          directions.push({
-            id: generated.id || `${niche}-dir-${i + 1}`,
-            name: generated.name,
-            nameShort: generated.name.substring(0, 30),
-            icon: this.getRandomIcon(),
-            description: generated.description,
-            tools: [`Tool ${i + 1}`, `Tool ${i + 2}`],
-            priceRange: this.generatePriceRange(),
-            difficulty: ['Начальный', 'Средний', 'Продвинутый'][i % 3],
-            timeToStart: `${3 + i} дней`,
-            demand: ['Высокий', 'Средний', 'Очень высокий'][i % 3],
-            keywords: generated.keywords || [],
-            faq: generated.faq || []
-          });
-        }
-      } catch (error) {
-        console.error(`Error generating direction ${i}:`, error.message);
-        // Fallback to template
-        directions.push(this.generateFallbackDirection(niche, i));
-      }
-
-      // Rate limiting
-      await this.sleep(500);
-    }
-
-    return directions;
+      return {
+        ...base,
+        description: `${base.description}. Акцент этого кластера: ${seedKeyword} и офферы для сегмента "${audience}".`,
+        keywords: this.uniqueList([
+          ...(base.keywords || []),
+          seedKeyword,
+          `${base.nameShort} для ${audience}`,
+          `${base.nameShort} под коммерческий спрос`,
+        ]),
+        faq: [
+          ...(base.faq || []),
+          {
+            q: `Как использовать ${base.nameShort.toLowerCase()} в кластере ${blueprint.label.toLowerCase()}?`,
+            a: `Используйте ${base.nameShort.toLowerCase()} как часть пакетного оффера: диагностика, внедрение, контент и дальнейшее сопровождение.`,
+          },
+        ].slice(0, 4),
+      };
+    });
   }
 
-  generateCities(count = 100) {
-    const baseCities = [
-      'Москва', 'Санкт-Петербург', 'Казань', 'Новосибирск', 'Екатеринбург',
-      'Нижний Новгород', 'Самара', 'Омск', 'Челябинск', 'Ростов-на-Дону',
-      'Уфа', 'Красноярск', 'Воронеж', 'Пермь', 'Волгоград',
-      'Краснодар', 'Саратов', 'Тюмень', 'Тольятти', 'Ижевск'
+  generateCities(count = 12) {
+    const cityPool = [
+      { name: 'Москва', slug: 'moskva', region: 'Центральный', population: '12.7M' },
+      { name: 'Санкт-Петербург', slug: 'spb', region: 'Северо-Западный', population: '5.6M' },
+      { name: 'Казань', slug: 'kazan', region: 'Приволжский', population: '1.3M' },
+      { name: 'Новосибирск', slug: 'novosibirsk', region: 'Сибирский', population: '1.6M' },
+      { name: 'Екатеринбург', slug: 'ekaterinburg', region: 'Уральский', population: '1.5M' },
+      { name: 'Краснодар', slug: 'krasnodar', region: 'Южный', population: '1.0M' },
+      { name: 'Ростов-на-Дону', slug: 'rostov', region: 'Южный', population: '1.1M' },
+      { name: 'Самара', slug: 'samara', region: 'Приволжский', population: '1.1M' },
+      { name: 'Нижний Новгород', slug: 'nnovgorod', region: 'Приволжский', population: '1.2M' },
+      { name: 'Минск', slug: 'minsk', region: 'Беларусь', population: '2.0M' },
+      { name: 'Алматы', slug: 'almaty', region: 'Казахстан', population: '2.0M' },
+      { name: 'Ташкент', slug: 'tashkent', region: 'Узбекистан', population: '2.9M' },
+      { name: 'Тбилиси', slug: 'tbilisi', region: 'Грузия', population: '1.2M' },
+      { name: 'Бишкек', slug: 'bishkek', region: 'Кыргызстан', population: '1.1M' },
     ];
 
-    const cities = [];
-
-    // Add base cities
-    baseCities.forEach((city, idx) => {
-      cities.push({
-        name: city,
-        slug: this.transliterate(city.toLowerCase()),
-        region: 'Россия',
-        population: `${1 + idx * 0.1}M`
-      });
-    });
-
-    // Generate additional cities to reach count
-    const additionalCities = [
-      'Барнаул', 'Ульяновск', 'Иркутск', 'Хабаровск', 'Ярославль',
-      'Владивосток', 'Махачкала', 'Томск', 'Оренбург', 'Кемерово',
-      'Новокузнецк', 'Рязань', 'Астрахань', 'Набережные Челны', 'Пенза',
-      'Липецк', 'Киров', 'Чебоксары', 'Калининград', 'Тула',
-      'Курск', 'Ставрополь', 'Сочи', 'Улан-Удэ', 'Тверь'
-    ];
-
-    additionalCities.forEach((city, idx) => {
-      if (cities.length < count) {
-        cities.push({
-          name: city,
-          slug: this.transliterate(city.toLowerCase()),
-          region: 'Россия',
-          population: `${0.5 + idx * 0.05}M`
-        });
-      }
-    });
-
-    // If still need more, generate variations
-    while (cities.length < count) {
-      const baseCity = baseCities[cities.length % baseCities.length];
-      cities.push({
-        name: `${baseCity} (район ${cities.length})`,
-        slug: `${this.transliterate(baseCity.toLowerCase())}-${cities.length}`,
-        region: 'Россия',
-        population: '0.5M'
-      });
-    }
-
-    return cities.slice(0, count);
+    return cityPool.slice(0, count);
   }
 
-  async generateTools(niche, count = 200) {
-    const categories = ['Основные', 'Продвинутые', 'Бесплатные', 'Платные', 'Новые', 'Популярные'];
-    const toolCategories = [];
+  generateTools(blueprint, pageBudget) {
+    const categoryIds = blueprint.toolCategoryIds.slice(0, pageBudget.toolCategories);
 
-    for (const category of categories) {
-      const tools = [];
-      const toolsPerCategory = Math.ceil(count / categories.length);
+    return categoryIds.map((categoryId, index) => {
+      const category =
+        baseToolCategories.find(item => item.id === categoryId) ||
+        baseToolCategories[index % baseToolCategories.length];
+      const seedKeyword =
+        blueprint.seedKeywords[index % blueprint.seedKeywords.length];
 
-      for (let i = 0; i < toolsPerCategory; i++) {
-        tools.push({
-          name: `${niche} Tool ${category} ${i + 1}`,
-          description: `Инструмент для ${niche} - ${category}`,
-          category,
-          pricing: i % 2 === 0 ? 'Бесплатно' : `От ${10 + i * 5}$/мес`,
-          url: `https://example.com/tool-${category}-${i}`,
-          rating: (4 + Math.random()).toFixed(1)
-        });
-      }
-
-      toolCategories.push({
-        name: category,
-        slug: this.transliterate(category.toLowerCase()),
-        tools
-      });
-    }
-
-    return toolCategories;
+      return {
+        ...category,
+        tools: category.tools.slice(0, pageBudget.toolsPerCategory).map(tool => ({
+          ...tool,
+          desc: `${tool.desc}. Полезно для сценариев "${seedKeyword}".`,
+        })),
+      };
+    });
   }
 
-  async generateArticles(niche, count = 50) {
+  generateArticles(blueprint, count = 18) {
+    const topics = blueprint.articleTopics;
     const articles = [];
-    const topics = this.getArticleTopics(niche);
 
-    for (let i = 0; i < count; i++) {
-      const topic = topics[i % topics.length];
+    for (let index = 0; index < count; index++) {
+      const topic = topics[index % topics.length];
+      const seed = blueprint.seedKeywords[index % blueprint.seedKeywords.length];
+      const slug = this.slugify(`${topic}-${index + 1}`);
 
       articles.push({
-        slug: `article-${i + 1}-${this.transliterate(topic.toLowerCase().substring(0, 30))}`,
-        title: `${topic} в 2026 году`,
+        slug,
+        title: `${topic} в 2026`,
         h1: topic,
-        desc: `Полное руководство: ${topic}`,
-        readTime: `${5 + (i % 10)} мин`,
-        keywords: [topic, niche, '2026'],
+        desc: `${topic}. Разбор спроса, оффера, инструментов и того, как монетизировать запрос "${seed}".`,
+        readTime: `${8 + (index % 7)} мин`,
+        keywords: this.uniqueList([topic, seed, blueprint.label, '2026']),
         type: 'article',
-        url: `/blog/article-${i + 1}-${this.transliterate(topic.toLowerCase().substring(0, 30))}`
+        url: `/blog/${slug}`,
       });
-
-      // Don't generate actual content here - will be done via ISR
     }
 
     return articles;
   }
 
-  /**
-   * Generate long-tail keyword pages (TRAFFIC MULTIPLIER)
-   */
-  generateLongTailPages(niche, count = 300) {
-    console.log(`🎯 Generating ${count} long-tail pages for ${niche}`);
+  generateLongTailPages(niche, blueprint, count, directions, articles, audiences) {
+    console.log(`Generating ${count} long-tail pages for ${niche}`);
 
-    const longTailKeywords = LongTailGenerator.generateNicheKeywords(niche);
-    const pages = [];
+    const seedKeywords = this.uniqueList([
+      ...blueprint.seedKeywords,
+      ...directions.slice(0, 6).map(item => item.nameShort.toLowerCase()),
+      ...articles.slice(0, 6).map(item => item.h1.toLowerCase()),
+      ...audiences.slice(0, 4).map(item => `${blueprint.label.toLowerCase()} для ${item.name}`),
+    ]);
 
-    // Take top keywords by priority
-    const sortedKeywords = longTailKeywords
-      .sort((a, b) => b.priority - a.priority)
-      .slice(0, count);
-
-    sortedKeywords.forEach((kw, index) => {
-      const meta = LongTailGenerator.generatePageMeta(kw.keyword, niche);
-      const freshness = ContentFreshnessManager.addFreshnessMetadata(meta);
-
-      pages.push({
-        ...freshness,
-        keyword: kw.keyword,
-        priority: kw.priority,
-        type: 'longtail',
-        url: `/longtail/${meta.slug}`,
-        path: `/longtail/${meta.slug}`,
-        name: meta.title
-      });
+    const longTailKeywords = LongTailGenerator.generateNicheKeywords(niche, {
+      seedKeywords,
+      audienceKeywords: audiences.slice(0, 4).map(item => item.name),
+      serviceKeywords: directions.slice(0, 5).map(item => item.nameShort),
     });
 
-    console.log(`✅ Generated ${pages.length} long-tail pages`);
+    const pages = [];
+    const seenSlugs = new Set();
+
+    longTailKeywords
+      .sort((left, right) => right.priority - left.priority)
+      .forEach(keywordMeta => {
+        if (pages.length >= count) {
+          return;
+        }
+
+        const meta = LongTailGenerator.generatePageMeta(
+          keywordMeta.keyword,
+          niche
+        );
+        if (seenSlugs.has(meta.slug)) {
+          return;
+        }
+
+        seenSlugs.add(meta.slug);
+        const freshness = ContentFreshnessManager.addFreshnessMetadata(meta);
+
+        pages.push({
+          ...freshness,
+          keyword: keywordMeta.keyword,
+          priority: keywordMeta.priority,
+          intent: keywordMeta.type,
+          type: 'longtail',
+          url: `/longtail/${meta.slug}`,
+          path: `/longtail/${meta.slug}`,
+          name: meta.title,
+        });
+      });
+
+    console.log(`Generated ${pages.length} long-tail pages`);
     return pages;
   }
 
-  /**
-   * Collect all pages for internal linking
-   */
-  collectAllPages(directions, articles, longTailPages, niche) {
+  generateAudiences(blueprint, count = 8) {
+    const ordered = [
+      ...blueprint.audienceSlugs
+        .map(slug => baseAudiences.find(item => item.slug === slug))
+        .filter(Boolean),
+      ...baseAudiences.filter(item => !blueprint.audienceSlugs.includes(item.slug)),
+    ];
+
+    return ordered.slice(0, count);
+  }
+
+  generateComparisons(directions, blueprint, count = 8) {
+    const preferred = baseComparisonPairs.filter(pair => {
+      const joined = `${pair.a} ${pair.b}`.toLowerCase();
+      return blueprint.seedKeywords.some(keyword =>
+        joined.includes(keyword.split(' ')[0].toLowerCase())
+      );
+    });
+
+    const fallback = baseComparisonPairs.filter(
+      pair => !preferred.some(item => item.slug === pair.slug)
+    );
+
+    const selected = [...preferred, ...fallback].slice(0, count);
+
+    return selected.length >= count
+      ? selected
+      : selected.concat(
+          directions
+            .slice(0, Math.max(0, count - selected.length))
+            .map((direction, index) => ({
+              a: direction.nameShort,
+              b: directions[(index + 1) % directions.length].nameShort,
+              slug: `${direction.id}-vs-${directions[(index + 1) % directions.length].id}`,
+            }))
+        );
+  }
+
+  generateYearMonths(count = 4) {
+    return baseYearMonths.slice(0, count);
+  }
+
+  collectAllPages({
+    directions,
+    cities,
+    tools,
+    articles,
+    longTailPages,
+    audiences,
+    comparisonPairs,
+    yearMonths,
+    niche,
+  }) {
     const allPages = [];
 
-    // Add directions
-    directions.forEach(dir => {
+    directions.forEach(direction => {
       allPages.push({
-        url: `/napravleniya/${dir.id}`,
-        path: `/napravleniya/${dir.id}`,
-        title: dir.name,
-        name: dir.name,
-        description: dir.description,
-        keywords: dir.keywords || [dir.name, niche],
-        type: 'direction'
+        url: `/napravleniya/${direction.id}`,
+        path: `/napravleniya/${direction.id}`,
+        title: direction.name,
+        name: direction.name,
+        description: direction.description,
+        keywords: direction.keywords || [direction.name, niche],
+        type: 'direction',
       });
     });
 
-    // Add articles
+    cities.forEach(city => {
+      directions.forEach(direction => {
+        allPages.push({
+          url: `/zarabotok-na-ai/${city.slug}/${direction.id}`,
+          path: `/zarabotok-na-ai/${city.slug}/${direction.id}`,
+          title: `${direction.nameShort} в ${city.name}`,
+          name: `${direction.nameShort} в ${city.name}`,
+          description: `${direction.nameShort} в ${city.name}: спрос, чеки, инструменты и локальные сценарии продаж.`,
+          keywords: this.uniqueList([
+            direction.nameShort,
+            city.name,
+            niche,
+            `${direction.nameShort} в ${city.name}`,
+          ]),
+          type: 'city-direction',
+        });
+      });
+    });
+
+    tools.forEach(category => {
+      allPages.push({
+        url: `/instrumenty/${category.id}`,
+        path: `/instrumenty/${category.id}`,
+        title: category.name,
+        name: category.name,
+        description: `${category.name}: стек инструментов для рабочих AI-сценариев.`,
+        keywords: this.uniqueList([
+          category.name,
+          ...category.tools.slice(0, 3).map(tool => tool.name),
+        ]),
+        type: 'tool-catalog',
+      });
+    });
+
+    audiences.forEach(audience => {
+      allPages.push({
+        url: `/dlya/${audience.slug}`,
+        path: `/dlya/${audience.slug}`,
+        title: `Гайд для ${audience.name}`,
+        name: `Гайд для ${audience.name}`,
+        description: audience.desc,
+        keywords: this.uniqueList([audience.name, niche, audience.slug]),
+        type: 'audience',
+      });
+    });
+
+    comparisonPairs.forEach(pair => {
+      allPages.push({
+        url: `/sravnenie/${pair.slug}`,
+        path: `/sravnenie/${pair.slug}`,
+        title: `${pair.a} vs ${pair.b}`,
+        name: `${pair.a} vs ${pair.b}`,
+        description: `Сравнение ${pair.a} и ${pair.b} в коммерческих AI-сценариях.`,
+        keywords: [pair.a, pair.b, niche],
+        type: 'comparison',
+      });
+    });
+
+    yearMonths.forEach(period => {
+      allPages.push({
+        url: `/zarabotok-na-ii/${period.slug}`,
+        path: `/zarabotok-na-ii/${period.slug}`,
+        title: `Заработок на AI: ${period.name}`,
+        name: `Заработок на AI: ${period.name}`,
+        description: `Сезонный и актуальный спрос на AI-услуги в период ${period.name}.`,
+        keywords: [period.name, niche, 'заработок на ai'],
+        type: 'time-period',
+      });
+    });
+
     articles.forEach(article => {
       allPages.push({
         url: article.url,
@@ -269,30 +396,24 @@ class ContentGenerator {
         name: article.title,
         description: article.desc,
         keywords: article.keywords,
-        type: 'article'
+        type: 'article',
       });
     });
 
-    // Add long-tail pages
     allPages.push(...longTailPages);
 
     return allPages;
   }
 
-  /**
-   * Optimize content with all SEO features
-   */
   optimizeContent(content, metadata) {
-    // Add internal links
     if (this.linkingEngine) {
       content = this.linkingEngine.addInternalLinks(
         content,
         metadata.url,
-        5 // max 5 internal links per page
+        5
       );
     }
 
-    // Add cross-links to other satellites
     content = this.addCrossLinks(
       content,
       metadata.niche,
@@ -300,15 +421,9 @@ class ContentGenerator {
       metadata.title
     );
 
-    // Full content optimization
-    const optimized = ContentOptimizer.optimize(content, metadata);
-
-    return optimized;
+    return ContentOptimizer.optimize(content, metadata);
   }
 
-  /**
-   * Generate schema markup for page
-   */
   generateSchema(pageType, data) {
     switch (pageType) {
       case 'article':
@@ -323,9 +438,6 @@ class ContentGenerator {
     }
   }
 
-  /**
-   * Add cross-links to content
-   */
   addCrossLinks(content, niche, domain, topic) {
     if (!this.registry || this.registry.getAll().length === 0) {
       return content;
@@ -336,127 +448,45 @@ class ContentGenerator {
       return content;
     }
 
-    const linksHTML = this.registry.formatLinksAsHTML(links);
-    return content + linksHTML;
+    return content + this.registry.formatLinksAsHTML(links);
   }
 
-  /**
-   * Register satellite in registry
-   */
   registerSatellite(satellite) {
     if (this.registry) {
       this.registry.register(satellite);
     }
   }
 
-  generateAudiences() {
-    return [
-      { name: 'Фрилансеры', slug: 'freelancers' },
-      { name: 'Предприниматели', slug: 'entrepreneurs' },
-      { name: 'Студенты', slug: 'students' },
-      { name: 'Специалисты', slug: 'professionals' },
-      { name: 'Новички', slug: 'beginners' },
-      { name: 'Эксперты', slug: 'experts' },
-      { name: 'Маркетологи', slug: 'marketers' },
-      { name: 'Разработчики', slug: 'developers' }
-    ];
-  }
-
-  generateComparisons(directions) {
-    const pairs = [];
-    for (let i = 0; i < Math.min(10, directions.length - 1); i++) {
-      pairs.push({
-        slug: `${directions[i].id}-vs-${directions[i + 1].id}`,
-        tool1: directions[i].name,
-        tool2: directions[i + 1].name
-      });
-    }
-    return pairs;
-  }
-
-  // Helper methods
-  getBaseDirections(niche) {
-    const directions = {
-      crypto: ['Trading', 'Mining', 'Staking', 'NFT', 'DeFi', 'Blockchain Development'],
-      fitness: ['Yoga', 'Gym', 'Nutrition', 'Running', 'CrossFit', 'Personal Training'],
-      education: ['Programming', 'Design', 'Marketing', 'Languages', 'Business', 'Data Science'],
-      realestate: ['Buying', 'Selling', 'Renting', 'Investing', 'Mortgage', 'Property Management']
-    };
-    return directions[niche] || directions.crypto;
-  }
-
-  getArticleTopics(niche) {
-    return [
-      `Как начать в ${niche}`,
-      `Лучшие инструменты для ${niche}`,
-      `${niche} для начинающих`,
-      `Заработок на ${niche}`,
-      `Топ-10 советов по ${niche}`,
-      `Ошибки новичков в ${niche}`,
-      `Будущее ${niche}`,
-      `${niche} в России`,
-      `Как выбрать ${niche}`,
-      `${niche} vs альтернативы`
-    ];
-  }
-
-  generateFallbackDirection(niche, index) {
-    return {
-      id: `${niche}-dir-${index}`,
-      name: `${niche} направление ${index + 1}`,
-      nameShort: `Направление ${index + 1}`,
-      icon: this.getRandomIcon(),
-      description: `Уникальное направление в ${niche}`,
-      tools: [`Tool ${index + 1}`, `Tool ${index + 2}`],
-      priceRange: this.generatePriceRange(),
-      difficulty: ['Начальный', 'Средний', 'Продвинутый'][index % 3],
-      timeToStart: `${3 + index} дней`,
-      demand: ['Высокий', 'Средний'][index % 2],
-      keywords: [`${niche}`, `направление ${index}`],
-      faq: []
-    };
-  }
-
-  getRandomIcon() {
-    const icons = ['🚀', '💡', '🎯', '⚡', '🔥', '💰', '📈', '🎨', '🛠️', '📊', '🌟', '💎', '🎪', '🎭', '🎬'];
-    return icons[Math.floor(Math.random() * icons.length)];
-  }
-
-  generatePriceRange() {
-    const min = Math.floor(Math.random() * 50) * 1000 + 5000;
-    const max = min * (2 + Math.floor(Math.random() * 5));
-    return `${min.toLocaleString('ru-RU')} – ${max.toLocaleString('ru-RU')} ₽`;
-  }
-
-  transliterate(text) {
-    const map = {
-      'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo',
-      'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
-      'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
-      'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch',
-      'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
-      ' ': '-', '(': '', ')': ''
-    };
-
-    return text.toLowerCase().split('').map(char => map[char] || char).join('');
-  }
-
-  sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  /**
-   * Generate complete sitemap for satellite
-   */
   generateSitemap(baseUrl, allPages) {
     return SitemapGenerator.generate(baseUrl, allPages);
   }
 
-  /**
-   * Generate robots.txt for satellite
-   */
   generateRobotsTxt(baseUrl) {
     return RobotsGenerator.generateAdvanced(baseUrl);
+  }
+
+  uniqueList(values) {
+    return [...new Set(values.filter(Boolean))];
+  }
+
+  slugify(text) {
+    const map = {
+      а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo',
+      ж: 'zh', з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm',
+      н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u',
+      ф: 'f', х: 'h', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'sch',
+      ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya',
+      ' ': '-', '(': '', ')': '',
+    };
+
+    return text
+      .toLowerCase()
+      .split('')
+      .map(char => map[char] || char)
+      .join('')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
   }
 }
 

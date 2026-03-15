@@ -2,7 +2,7 @@
 
 /**
  * DAILY SATELLITE GENERATOR
- * Generates 20 satellites daily with unique AI-generated content
+ * Generates satellites with unique AI-generated content
  *
  * Usage: node scripts/daily-generator.js
  */
@@ -13,29 +13,30 @@ const { SearchEnginePing } = require('../src/utils/search-ping');
 const { SatelliteGenerator } = require('./satellite-generator');
 const { BuildManager } = require('./build-all');
 const { DeploymentManager } = require('./deploy-all');
-const { SEOSubmissionManager } = require('./submit-to-search');
 const fs = require('fs');
 const path = require('path');
 
-// ============================================================
-// CONFIGURATION
-// ============================================================
-
 const CONFIG = {
   dailySatellites: Number(process.env.DAILY_SATELLITES ?? 20),
-  pagesPerSatellite: Number(process.env.PAGES_PER_SATELLITE ?? 1000),
-  niches: ['crypto', 'fitness', 'education', 'realestate', 'finance', 'tech', 'health', 'business'],
+  pagesPerSatellite: Number(process.env.PAGES_PER_SATELLITE ?? 300),
+  niches: [
+    'ai-copywriting',
+    'ai-design',
+    'ai-automation',
+    'ai-marketing',
+    'ai-video',
+    'ai-business',
+    'ai-freelance',
+    'ai-education',
+  ],
   deepseekApiKey: process.env.DEEPSEEK_API_KEY,
-
-  // Important: keep everything inside the repo workspace (no ".." paths).
-  // Some CI steps reject relative patterns like ../something.
+  mainSiteUrl:
+    process.env.MAIN_SITE_URL ||
+    process.env.NEXT_PUBLIC_MAIN_SITE ||
+    'https://seo-programmatic-main.berdniko9544.workers.dev',
   satellitesDir: path.join(process.cwd(), 'satellites'),
   logFile: path.join(process.cwd(), 'logs', 'daily-generation-log.json'),
 };
-
-// ============================================================
-// DAILY GENERATOR
-// ============================================================
 
 class DailySatelliteGenerator {
   constructor() {
@@ -46,13 +47,12 @@ class DailySatelliteGenerator {
     this.startTime = Date.now();
     this._saving = false;
 
-    // If GitHub Actions cancels the job (timeout/manual cancel), try to persist logs.
-    const onCancel = (signal) => {
+    const onCancel = signal => {
       try {
-        console.error(`\n⚠️ Received ${signal}. Saving partial results...`);
+        console.error(`\nвљ пёЏ Received ${signal}. Saving partial results...`);
         this.saveResults();
-      } catch (e) {
-        console.error('Failed to save partial results:', e?.message || e);
+      } catch (error) {
+        console.error('Failed to save partial results:', error?.message || error);
       } finally {
         process.exit(1);
       }
@@ -62,86 +62,82 @@ class DailySatelliteGenerator {
     process.on('SIGINT', () => onCancel('SIGINT'));
   }
 
+  getActualPageCount(data) {
+    return (data?.allPages?.length || 0) + (data?.pageBudget?.estimatedStaticPages || 0);
+  }
+
   async run() {
-    console.log('🌅 DAILY SATELLITE GENERATION');
-    console.log('═'.repeat(80));
-    console.log(`📅 Date: ${new Date().toISOString()}`);
-    console.log(`🎯 Target: ${CONFIG.dailySatellites} satellites`);
-    console.log(`📄 Pages per satellite: ${CONFIG.pagesPerSatellite}`);
+    console.log('рџЊ… DAILY SATELLITE GENERATION');
+    console.log('в•ђ'.repeat(80));
+    console.log(`рџ“… Date: ${new Date().toISOString()}`);
+    console.log(`рџЋЇ Target: ${CONFIG.dailySatellites} satellites`);
+    console.log(`рџ“„ Pages per satellite: ${CONFIG.pagesPerSatellite}`);
+    console.log(`рџЏ  Main site hub: ${CONFIG.mainSiteUrl}`);
     console.log('');
 
     try {
-      // Step 1: Generate satellites with AI content
       await this.generateSatellites();
-
-      // Step 2: Build all
       await this.buildSatellites();
-
-      // Step 3: Deploy all
       await this.deploySatellites();
-
-      // Step 4: Submit to search engines
       await this.submitToSEO();
-
-      // Step 5: Persist deployed URLs list for external submission workflows
       this.saveDeployedUrls();
-
-      // Step 6: Save results
       this.saveResults();
 
       const duration = ((Date.now() - this.startTime) / 1000 / 60).toFixed(2);
+      const totalPages = this.results
+        .filter(result => result.success)
+        .reduce((sum, result) => sum + (result.pages || 0), 0);
 
-      console.log('\n✅ DAILY GENERATION COMPLETE!');
-      console.log(`⏱️ Total time: ${duration} minutes`);
-      console.log(`📊 Success: ${this.results.filter(r => r.success).length}/${CONFIG.dailySatellites}`);
-      console.log(`📈 Total pages: ${CONFIG.dailySatellites * CONFIG.pagesPerSatellite}`);
-
+      console.log('\nвњ… DAILY GENERATION COMPLETE!');
+      console.log(`вЏ±пёЏ Total time: ${duration} minutes`);
+      console.log(`рџ“Љ Success: ${this.results.filter(r => r.success).length}/${CONFIG.dailySatellites}`);
+      console.log(`рџ“€ Total pages: ${totalPages}`);
     } catch (error) {
-      console.error('\n❌ CRITICAL ERROR:', error.message);
+      console.error('\nвќЊ CRITICAL ERROR:', error.message);
       this.saveResults();
       process.exit(1);
     }
   }
 
   async generateSatellites() {
-    console.log('\n📦 STEP 1: Generating satellites with AI content');
-    console.log('─'.repeat(80));
+    console.log('\nрџ“¦ STEP 1: Generating satellites with AI content');
+    console.log('в”Ђ'.repeat(80));
 
     for (let i = 0; i < CONFIG.dailySatellites; i++) {
       const niche = CONFIG.niches[i % CONFIG.niches.length];
       const satelliteNumber = i + 1;
       const domain = `${niche}-${Date.now()}-${i}`;
 
-      console.log(`\n[${satelliteNumber}/${CONFIG.dailySatellites}] 🎨 Generating: ${domain}`);
+      console.log(`\n[${satelliteNumber}/${CONFIG.dailySatellites}] рџЋЁ Generating: ${domain}`);
 
       try {
-        // Generate unique content using AI (includes long-tail pages)
         const data = await this.contentGenerator.generateSatelliteData(
           niche,
           satelliteNumber,
           CONFIG.pagesPerSatellite
         );
+        const actualPages = this.getActualPageCount(data);
 
-        // Create satellite with generated data
         const generator = new SatelliteGenerator({
           niche,
           pages: CONFIG.pagesPerSatellite,
           domain,
-          customData: data
+          customData: data,
+          templateFamily: data?.siteMeta?.templateFamily,
         });
 
         await generator.generate();
 
-        // Register satellite for cross-linking
         const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
         if (!parentDomain) {
           throw new Error('Missing required env: SATELLITE_PARENT_DOMAIN');
         }
+
         const satelliteUrl = `https://${domain}.${parentDomain}`;
         this.contentGenerator.registerSatellite({
           name: domain,
-          domain: domain,
-          niche: niche,
+          domain,
+          niche,
           url: satelliteUrl,
           pages: data.articles || [],
         });
@@ -150,15 +146,16 @@ class DailySatelliteGenerator {
           id: satelliteNumber,
           domain,
           niche,
-          pages: CONFIG.pagesPerSatellite,
+          pages: actualPages,
+          requestedPages: CONFIG.pagesPerSatellite,
+          templateFamily: data?.siteMeta?.templateFamily,
           success: true,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
 
-        console.log(`✅ [${satelliteNumber}] Generated successfully`);
-
+        console.log(`вњ… [${satelliteNumber}] Generated successfully (${actualPages} pages, family: ${data?.siteMeta?.templateFamily})`);
       } catch (error) {
-        console.error(`❌ [${satelliteNumber}] Error:`, error.message);
+        console.error(`вќЊ [${satelliteNumber}] Error:`, error.message);
 
         this.results.push({
           id: satelliteNumber,
@@ -166,11 +163,10 @@ class DailySatelliteGenerator {
           niche,
           success: false,
           error: error.message,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
 
-      // Rate limiting between satellites
       if (i < CONFIG.dailySatellites - 1) {
         await this.sleep(2000);
       }
@@ -178,61 +174,58 @@ class DailySatelliteGenerator {
   }
 
   async buildSatellites() {
-    console.log('\n🔨 STEP 2: Building all satellites');
-    console.log('─'.repeat(80));
+    console.log('\nрџ”Ё STEP 2: Building all satellites');
+    console.log('в”Ђ'.repeat(80));
 
     const builder = new BuildManager();
     await builder.buildAll();
   }
 
   async deploySatellites() {
-    console.log('\n☁️ STEP 3: Deploying to Cloudflare Workers');
-    console.log('─'.repeat(80));
+    console.log('\nвЃпёЏ STEP 3: Deploying to Cloudflare Workers');
+    console.log('в”Ђ'.repeat(80));
 
     const deployer = new DeploymentManager();
     await deployer.deployAll();
   }
 
   async submitToSEO() {
-    console.log('\n🔍 STEP 4: Submitting to search engines');
-    console.log('─'.repeat(80));
+    console.log('\nрџ”Ќ STEP 4: Submitting to search engines');
+    console.log('в”Ђ'.repeat(80));
 
-    // Ping search engines for each successful satellite
-    const successfulSatellites = this.results.filter(r => r.success);
+    const successfulSatellites = this.results.filter(result => result.success);
 
     for (const satellite of successfulSatellites) {
       const parentDomain = process.env.SATELLITE_PARENT_DOMAIN;
       if (!parentDomain) {
         throw new Error('Missing required env: SATELLITE_PARENT_DOMAIN');
       }
+
       const baseUrl = `https://${satellite.domain}.${parentDomain}`;
       const sitemapUrl = `${baseUrl}/sitemap.xml`;
 
       try {
-        console.log(`📡 Pinging search engines for ${satellite.domain}...`);
+        console.log(`рџ“Ў Pinging search engines for ${satellite.domain}...`);
         const pingResults = await this.searchPing.pingAll(sitemapUrl);
 
         pingResults.forEach(result => {
           if (result.success) {
-            console.log(`  ✅ ${result.engine}: Success`);
+            console.log(`  вњ… ${result.engine}: Success`);
           } else {
-            console.log(`  ⚠️ ${result.engine}: ${result.error}`);
+            console.log(`  вљ пёЏ ${result.engine}: ${result.error}`);
           }
         });
 
-        // Small delay between pings
         await this.sleep(1000);
       } catch (error) {
-        console.error(`  ❌ Error pinging for ${satellite.domain}:`, error.message);
+        console.error(`  вќЊ Error pinging for ${satellite.domain}:`, error.message);
       }
     }
 
-    console.log(`\n✅ Pinged ${successfulSatellites.length} satellites`);
+    console.log(`\nвњ… Pinged ${successfulSatellites.length} satellites`);
   }
 
   saveDeployedUrls() {
-    // Try to use satellites/urls.txt written by DeploymentManager (deploy-all.js)
-    // If it doesn't exist, reconstruct from this.results.
     const urlsFile = path.join(CONFIG.satellitesDir, 'urls.txt');
     let urls = [];
 
@@ -240,8 +233,8 @@ class DailySatelliteGenerator {
       urls = fs
         .readFileSync(urlsFile, 'utf8')
         .split('\n')
-        .map(l => l.trim())
-        .filter(l => l && l.startsWith('http'));
+        .map(line => line.trim())
+        .filter(line => line && line.startsWith('http'));
     }
 
     if (urls.length === 0) {
@@ -249,37 +242,39 @@ class DailySatelliteGenerator {
       if (!parentDomain) {
         throw new Error('Missing required env: SATELLITE_PARENT_DOMAIN');
       }
+
       urls = this.results
-        .filter(r => r.success && r.domain)
-        .map(r => `https://${r.domain}.${parentDomain}`);
+        .filter(result => result.success && result.domain)
+        .map(result => `https://${result.domain}.${parentDomain}`);
     }
 
-    // Ensure directory exists
     if (!fs.existsSync(CONFIG.satellitesDir)) {
       fs.mkdirSync(CONFIG.satellitesDir, { recursive: true });
     }
 
     fs.writeFileSync(urlsFile, urls.join('\n'));
-    console.log(`\n📝 Deployed URLs saved: ${urlsFile} (${urls.length})`);
+    console.log(`\nрџ“ќ Deployed URLs saved: ${urlsFile} (${urls.length})`);
   }
 
   saveResults() {
     if (this._saving) return;
     this._saving = true;
 
+    const totalPages = this.results
+      .filter(result => result.success)
+      .reduce((sum, result) => sum + (result.pages || 0), 0);
+
     const log = {
       date: new Date().toISOString(),
       target: CONFIG.dailySatellites,
       pagesPerSatellite: CONFIG.pagesPerSatellite,
-      totalPages: CONFIG.dailySatellites * CONFIG.pagesPerSatellite,
+      totalPages,
       duration: ((Date.now() - this.startTime) / 1000 / 60).toFixed(2),
       results: this.results,
-      success: this.results.filter(r => r.success).length,
-      failed: this.results.filter(r => !r.success).length
+      success: this.results.filter(result => result.success).length,
+      failed: this.results.filter(result => !result.success).length,
     };
 
-    // Make sure logs exist even if we're about to be canceled.
-    // (If the process is killed after this point, upload-artifact can still find the file.)
     const logDir = path.dirname(CONFIG.logFile);
     if (!fs.existsSync(logDir)) {
       fs.mkdirSync(logDir, { recursive: true });
@@ -289,15 +284,17 @@ class DailySatelliteGenerator {
     if (fs.existsSync(CONFIG.logFile)) {
       try {
         logs = JSON.parse(fs.readFileSync(CONFIG.logFile, 'utf8'));
-        if (!Array.isArray(logs)) logs = [];
+        if (!Array.isArray(logs)) {
+          logs = [];
+        }
       } catch {
         logs = [];
       }
     }
-    logs.push(log);
 
+    logs.push(log);
     fs.writeFileSync(CONFIG.logFile, JSON.stringify(logs, null, 2));
-    console.log(`\n📝 Log saved: ${CONFIG.logFile}`);
+    console.log(`\nрџ“ќ Log saved: ${CONFIG.logFile}`);
 
     this._saving = false;
   }
@@ -307,16 +304,9 @@ class DailySatelliteGenerator {
   }
 }
 
-// ============================================================
-// CLI
-// ============================================================
-
 async function main() {
-  // Check API key
   if (!CONFIG.deepseekApiKey) {
-    console.error('❌ DEEPSEEK_API_KEY not set!');
-    console.log('Set it: export DEEPSEEK_API_KEY=your_key');
-    process.exit(1);
+    console.warn('вљ пёЏ DEEPSEEK_API_KEY not set. Falling back to local semantic generation only.');
   }
 
   const generator = new DailySatelliteGenerator();
