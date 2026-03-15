@@ -1,7 +1,7 @@
 const DEFAULT_MAIN_SITE_URL =
   process.env.DEFAULT_MAIN_SITE_URL ||
   process.env.MAIN_SITE_URL ||
-  'https://seo-programmatic-main.berdniko9544.workers.dev';
+  'https://1mb3-guide-2026.vercel.app';
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||

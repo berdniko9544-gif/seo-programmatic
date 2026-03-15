@@ -3,7 +3,7 @@
 ## 🎉 Status: Production Ready
 
 ### ✅ Deployed on Vercel
-- **Main site:** https://seo-programmatic-main.vercel.app
+- **Main site:** https://1mb3-guide-2026.vercel.app
 - **19 satellites:** All updated with ISR architecture
 - **Pages:** 188 static + ISR updates every 6 hours
 - **Last deployment:** All satellites successfully updated

@@ -34,7 +34,7 @@ const CONFIG = {
   mainSiteUrl:
     process.env.MAIN_SITE_URL ||
     process.env.NEXT_PUBLIC_MAIN_SITE ||
-    'https://seo-programmatic-main.berdniko9544.workers.dev',
+    'https://1mb3-guide-2026.vercel.app',
   satellitesDir: path.join(process.cwd(), 'satellites'),
   logFile: path.join(process.cwd(), 'logs', 'daily-generation-log.json'),
 };

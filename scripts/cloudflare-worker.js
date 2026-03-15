@@ -1,7 +1,9 @@
 const DEFAULT_MAIN_SITE_URL =
   process.env.MAIN_SITE_URL ||
   process.env.NEXT_PUBLIC_MAIN_SITE ||
-  'https://seo-programmatic-main.berdniko9544.workers.dev';
+  'https://1mb3-guide-2026.vercel.app';
+
+const DEFAULT_WORKERS_SUBDOMAIN = 'berdniko9544';
 
 function makeWorkerName(satelliteName) {
   const prefix = 'seo-sat-';
@@ -15,8 +17,14 @@ function getWorkersSubdomain() {
     return process.env.CLOUDFLARE_WORKERS_SUBDOMAIN;
   }
 
-  const match = DEFAULT_MAIN_SITE_URL.match(/^https?:\/\/[^.]+\.([a-z0-9-]+)\.workers\.dev/i);
-  return match?.[1] || null;
+  const workersBaseUrl =
+    process.env.CLOUDFLARE_WORKERS_URL ||
+    process.env.CLOUDFLARE_WORKERS_BASE_URL ||
+    process.env.WORKERS_DEV_URL ||
+    `https://seo-programmatic-main.${DEFAULT_WORKERS_SUBDOMAIN}.workers.dev`;
+
+  const match = workersBaseUrl.match(/^https?:\/\/[^.]+\.([a-z0-9-]+)\.workers\.dev/i);
+  return match?.[1] || DEFAULT_WORKERS_SUBDOMAIN;
 }
 
 function computeSatelliteRoute(satelliteName) {

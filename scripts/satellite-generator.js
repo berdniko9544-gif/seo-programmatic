@@ -273,7 +273,7 @@ class SatelliteGenerator {
     const mainSiteUrl =
       process.env.MAIN_SITE_URL ||
       process.env.NEXT_PUBLIC_MAIN_SITE ||
-      'https://seo-programmatic-main.berdniko9544.workers.dev';
+      'https://1mb3-guide-2026.vercel.app';
     const siteName = siteMeta.siteName || `1MB3 ${blueprint.label}`;
 
     // Keep NEXT_PUBLIC_BASE_URL as an alias while the codebase migrates.

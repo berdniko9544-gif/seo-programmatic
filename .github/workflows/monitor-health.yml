@@ -33,7 +33,7 @@ jobs:
 
       - name: Check main site
         run: |
-          URL="${MAIN_SITE_URL:-https://seo-programmatic-main.vercel.app}"
+          URL="${MAIN_SITE_URL:-https://1mb3-guide-2026.vercel.app}"
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
           if [ "$STATUS" != "200" ]; then
             echo "❌ Main site is down: $URL (HTTP $STATUS)"

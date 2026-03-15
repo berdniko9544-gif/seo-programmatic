@@ -22,7 +22,7 @@ env:
   YANDEX_WEBMASTER_TOKEN: ${{ secrets.YANDEX_WEBMASTER_TOKEN }}
   YANDEX_USER_ID: ${{ secrets.YANDEX_USER_ID }}
   REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
-  MAIN_SITE_URL: 'https://seo-programmatic-main.berdniko9544.workers.dev'
+  MAIN_SITE_URL: 'https://1mb3-guide-2026.vercel.app'
 
 jobs:
   generate-satellites:
