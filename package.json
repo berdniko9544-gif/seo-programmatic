@@ -18,7 +18,10 @@
     "satellite:vercel-daily": "node scripts/vercel-daily-generator.js",
     "satellite:submit-seo": "node scripts/submit-to-search.js",
     "satellite:health": "node scripts/health-check.js",
-    "satellite:trigger-isr": "node scripts/trigger-isr.js"
+    "satellite:trigger-isr": "node scripts/trigger-isr.js",
+    "network:create": "node scripts/create-satellite-network.js",
+    "network:submit-indexnow": "node scripts/submit-all-indexnow.js",
+    "network:refresh-content": "node scripts/trigger-content-refresh.js"
   },
   "dependencies": {
     "next": "^16.1.6",

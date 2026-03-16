@@ -1,0 +1,48 @@
+name: Weekly Content Refresh
+
+on:
+  schedule:
+    # Run every Sunday at 3 AM Moscow time (00:00 UTC)
+    - cron: '0 0 * * 0'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  refresh-content:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Trigger ISR revalidation
+        env:
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+        run: node scripts/trigger-content-refresh.js
+
+      - name: Submit to IndexNow
+        run: node scripts/submit-all-indexnow.js
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: refresh-logs
+          path: |
+            satellites/content-refresh-log.json
+            satellites/indexnow-submission.json
+          retention-days: 30
+
+      - name: Notify completion
+        if: success()
+        run: |
+          echo "✅ Content refresh completed successfully"
+          echo "📊 Check artifacts for detailed logs"

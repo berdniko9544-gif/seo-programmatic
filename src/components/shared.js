@@ -75,6 +75,16 @@ export function FamilyBrief() {
 }
 
 export function Footer() {
+  // Load satellite network links if available
+  let satelliteNetwork = null;
+  if (IS_SATELLITE) {
+    try {
+      satelliteNetwork = require('../../satellite-network.json');
+    } catch (e) {
+      // Network config not available yet
+    }
+  }
+
   return (
     <footer className="site-footer">
       <div className="container">
@@ -121,10 +131,30 @@ export function Footer() {
                 <a href={MAIN_SITE_URL}>Купить гайд</a>
                 <Link href="/dlya/freelancer">Для фрилансеров</Link>
                 <Link href="/dlya/business">Для предпринимателей</Link>
+                <Link href="/projects">Наши проекты</Link>
               </>
             )}
           </div>
         </div>
+        
+        {satelliteNetwork && satelliteNetwork.crossLinks && satelliteNetwork.crossLinks.length > 0 && (
+          <div className="satellite-network">
+            <h4>Смежные темы</h4>
+            <div className="network-links">
+              {satelliteNetwork.crossLinks.slice(0, 6).map((link, idx) => (
+                <a
+                  key={idx}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="network-link"
+                >
+                  AI {link.niche}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="footer-bottom">
           © 2026 1MB3. Все материалы защищены. Контент служит навигацией по AI-направлениям и связан с главным хабом 1MB3.
           <br />
