@@ -1,15 +1,8 @@
-const cities = [
-  { name: "Москва", slug: "moskva", region: "Центральный", population: "12.7M" },
-  { name: "Санкт-Петербург", slug: "spb", region: "Северо-Западный", population: "5.6M" },
-  { name: "Казань", slug: "kazan", region: "Приволжский", population: "1.3M" },
-  { name: "Новосибирск", slug: "novosibirsk", region: "Сибирский", population: "1.6M" },
-  { name: "Екатеринбург", slug: "ekaterinburg", region: "Уральский", population: "1.5M" },
-  { name: "Краснодар", slug: "krasnodar", region: "Южный", population: "1.0M" },
-  { name: "Алматы", slug: "almaty", region: "Казахстан", population: "2.0M" },
-  { name: "Ташкент", slug: "tashkent", region: "Узбекистан", population: "2.9M" },
-  { name: "Минск", slug: "minsk", region: "Беларусь", population: "2.0M" },
-  { name: "Тбилиси", slug: "tbilisi", region: "Грузия", population: "1.2M" },
-];
+// Import extended cities list (120 cities)
+const { extendedCities } = require('./cities-extended');
+
+// Use extended cities for maximum geographic coverage
+const cities = extendedCities;
 
 const audiences = [
   {

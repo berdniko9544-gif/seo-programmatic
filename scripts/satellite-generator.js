@@ -68,7 +68,7 @@ const NICHE_TEMPLATES = {
 class SatelliteGenerator {
   constructor(options) {
     this.niche = options.niche;
-    this.targetPages = options.pages || 300;
+    this.targetPages = options.pages || 1000; // Increased from 300 to 1000 for maximum traffic
     this.domain = options.domain || `${this.niche}-guide-${Date.now()}`;
     this.outputPath = path.join(CONFIG.outputDir, this.domain);
     this.customData = options.customData || null; // AI-generated data from ContentGenerator
@@ -369,7 +369,7 @@ async function main() {
 
   const options = {
     niche: 'ai-business',
-    pages: 300,
+    pages: 1000, // Increased from 300 to 1000 for maximum traffic
     domain: null,
   };
 

@@ -499,17 +499,21 @@ function pickTemplateFamily(satelliteNumber = 1, niche = 'ai-business') {
   return familyIds[(Math.max(1, satelliteNumber) - 1 + offset) % familyIds.length];
 }
 
-function buildPageBudget(targetPages = 300) {
-  const requested = clamp(Number(targetPages) || 300, 180, 1200);
+function buildPageBudget(targetPages = 1000) {
+  // Support up to 2000 pages per satellite for maximum traffic
+  const requested = clamp(Number(targetPages) || 1000, 180, 2000);
   const estimatedStaticPages = 10;
   const audiences = 8;
   const toolCategories = 6;
-  const comparisons = requested >= 340 ? 10 : 8;
-  const periods = 4;
-  const articles = requested >= 340 ? 20 : 18;
+  
+  // Scale comparisons, periods, and articles based on target
+  const comparisons = requested >= 800 ? 15 : requested >= 340 ? 10 : 8;
+  const periods = requested >= 800 ? 6 : 4;
+  const articles = requested >= 800 ? 30 : requested >= 340 ? 20 : 18;
 
-  let directions = clamp(Math.round(requested / 30), 8, 12);
-  let cities = clamp(Math.round(requested / 25), 9, 14);
+  // Scale directions and cities based on target, with higher limits
+  let directions = clamp(Math.round(requested / 80), 8, 12);
+  let cities = clamp(Math.round(requested / 8), 12, 120); // Up to 120 cities!
 
   const computeLongTail = () =>
     requested -
@@ -524,17 +528,29 @@ function buildPageBudget(targetPages = 300) {
 
   let longTail = computeLongTail();
 
-  while (longTail < 90 && cities > 8) {
+  // Prioritize long-tail pages: aim for 40-60% of total pages
+  const targetLongTailMin = Math.floor(requested * 0.4);
+  const targetLongTailMax = Math.floor(requested * 0.6);
+
+  // Reduce cities if long-tail is too low
+  while (longTail < targetLongTailMin && cities > 12) {
     cities -= 1;
     longTail = computeLongTail();
   }
 
-  while (longTail < 70 && directions > 8) {
+  // Reduce directions if still too low
+  while (longTail < targetLongTailMin && directions > 8) {
     directions -= 1;
     longTail = computeLongTail();
   }
 
-  longTail = Math.max(60, longTail);
+  // Ensure minimum long-tail pages
+  longTail = Math.max(targetLongTailMin, longTail);
+
+  // Cap long-tail at maximum to leave room for other page types
+  if (longTail > targetLongTailMax) {
+    longTail = targetLongTailMax;
+  }
 
   return {
     requestedPages: requested,
@@ -546,7 +562,7 @@ function buildPageBudget(targetPages = 300) {
     comparisons,
     periods,
     articles,
-    toolsPerCategory: requested >= 340 ? 10 : 8,
+    toolsPerCategory: requested >= 800 ? 12 : requested >= 340 ? 10 : 8,
     longTail,
     estimatedTotal:
       estimatedStaticPages +

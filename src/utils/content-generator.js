@@ -134,24 +134,13 @@ class ContentGenerator {
   }
 
   generateCities(count = 12) {
-    const cityPool = [
-      { name: 'Москва', slug: 'moskva', region: 'Центральный', population: '12.7M' },
-      { name: 'Санкт-Петербург', slug: 'spb', region: 'Северо-Западный', population: '5.6M' },
-      { name: 'Казань', slug: 'kazan', region: 'Приволжский', population: '1.3M' },
-      { name: 'Новосибирск', slug: 'novosibirsk', region: 'Сибирский', population: '1.6M' },
-      { name: 'Екатеринбург', slug: 'ekaterinburg', region: 'Уральский', population: '1.5M' },
-      { name: 'Краснодар', slug: 'krasnodar', region: 'Южный', population: '1.0M' },
-      { name: 'Ростов-на-Дону', slug: 'rostov', region: 'Южный', population: '1.1M' },
-      { name: 'Самара', slug: 'samara', region: 'Приволжский', population: '1.1M' },
-      { name: 'Нижний Новгород', slug: 'nnovgorod', region: 'Приволжский', population: '1.2M' },
-      { name: 'Минск', slug: 'minsk', region: 'Беларусь', population: '2.0M' },
-      { name: 'Алматы', slug: 'almaty', region: 'Казахстан', population: '2.0M' },
-      { name: 'Ташкент', slug: 'tashkent', region: 'Узбекистан', population: '2.9M' },
-      { name: 'Тбилиси', slug: 'tbilisi', region: 'Грузия', population: '1.2M' },
-      { name: 'Бишкек', slug: 'bishkek', region: 'Кыргызстан', population: '1.1M' },
-    ];
-
-    return cityPool.slice(0, count);
+    // Use extended cities list for maximum geographic coverage
+    const { extendedCities } = require('../data/cities-extended');
+    
+    // Sort by priority (highest first) and take requested count
+    const sortedCities = [...extendedCities].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    
+    return sortedCities.slice(0, count);
   }
 
   generateTools(blueprint, pageBudget) {
