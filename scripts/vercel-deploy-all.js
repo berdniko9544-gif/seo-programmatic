@@ -9,11 +9,29 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
+// Load VERCEL_TOKEN from .env.local if not in environment
+function loadVercelToken() {
+  if (process.env.VERCEL_TOKEN) {
+    return process.env.VERCEL_TOKEN;
+  }
+  
+  const envPath = path.join(process.cwd(), '.env.local');
+  if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    const match = envContent.match(/VERCEL_TOKEN=(.+)/);
+    if (match) {
+      return match[1].trim();
+    }
+  }
+  
+  return null;
+}
+
 const CONFIG = {
   satellitesDir: path.join(process.cwd(), 'satellites'),
   logFile: path.join(process.cwd(), 'satellites', 'vercel-deploy-log.json'),
   maxConcurrent: 3,
-  vercelToken: process.env.VERCEL_TOKEN,
+  vercelToken: loadVercelToken(),
 };
 
 class VercelDeploymentManager {
