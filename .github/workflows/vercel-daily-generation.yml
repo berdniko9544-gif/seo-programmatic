@@ -1,0 +1,88 @@
+name: Daily Satellite Generation (Vercel)
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # 6:00 МСК каждый день
+  workflow_dispatch:
+    inputs:
+      daily_satellites:
+        description: 'Satellites to generate (5-10 recommended for Vercel Pro)'
+        required: false
+        default: '5'
+      pages_per_satellite:
+        description: 'Pages per satellite'
+        required: false
+        default: '1000'
+
+env:
+  DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  YANDEX_WEBMASTER_TOKEN: ${{ secrets.YANDEX_WEBMASTER_TOKEN }}
+  YANDEX_USER_ID: ${{ secrets.YANDEX_USER_ID }}
+  REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+  MAIN_SITE_URL: 'https://1mb3-guide-2026.vercel.app'
+
+jobs:
+  generate-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel
+
+      - name: Generate and deploy satellites
+        run: node scripts/vercel-daily-generator.js
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+          MAIN_SITE_URL: ${{ env.MAIN_SITE_URL }}
+          DAILY_SATELLITES: ${{ github.event.inputs.daily_satellites || '5' }}
+          PAGES_PER_SATELLITE: ${{ github.event.inputs.pages_per_satellite || '1000' }}
+
+      - name: Submit to Yandex
+        if: always()
+        run: node scripts/submit-to-search.js
+        env:
+          YANDEX_WEBMASTER_TOKEN: ${{ secrets.YANDEX_WEBMASTER_TOKEN }}
+          YANDEX_USER_ID: ${{ secrets.YANDEX_USER_ID }}
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vercel-logs
+          path: logs/
+          retention-days: 30
+
+      - name: Upload URLs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vercel-urls
+          path: satellites/vercel-urls.txt
+          retention-days: 30
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "✅ Generation complete"
+          echo "🎯 Satellites: ${{ github.event.inputs.daily_satellites || '5' }}"
+          echo "📄 Pages: ${{ github.event.inputs.pages_per_satellite || '1000' }}"
+          echo "☁️  Platform: Vercel Pro"
+          echo "💡 ISR enabled: 83% build minute savings"
