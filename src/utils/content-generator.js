@@ -52,7 +52,7 @@ class ContentGenerator {
     );
     const cities = this.generateCities(pageBudget.cities);
     const tools = this.generateTools(blueprint, pageBudget);
-    const articles = this.generateArticles(blueprint, pageBudget.articles);
+    const articles = this.generateArticles(blueprint, pageBudget.articles, satelliteNumber);
     const audiences = this.generateAudiences(blueprint, pageBudget.audiences);
     const comparisonPairs = this.generateComparisons(
       directions,
@@ -187,22 +187,70 @@ class ContentGenerator {
     });
   }
 
-  generateArticles(blueprint, count = 18) {
+  generateArticles(blueprint, count = 18, satelliteNumber = 1) {
     const topics = blueprint.articleTopics;
     const articles = [];
+    
+    // Variation angles based on satellite number
+    const angles = [
+      { prefix: 'Как', suffix: 'пошаговая инструкция' },
+      { prefix: 'Топ способов', suffix: 'проверенные методы' },
+      { prefix: 'Секреты', suffix: 'от экспертов' },
+      { prefix: 'Практика', suffix: 'реальные кейсы' },
+      { prefix: 'Гайд по', suffix: 'для начинающих' },
+      { prefix: 'Стратегии', suffix: 'что работает' },
+      { prefix: 'Инструменты для', suffix: 'обзор и сравнение' },
+      { prefix: 'Ошибки в', suffix: 'как избежать' },
+    ];
+    
+    const descTemplates = [
+      (topic, seed) => `${topic}. Разбор спроса, оффера, инструментов и того, как монетизировать запрос "${seed}".`,
+      (topic, seed) => `Полный гайд: ${topic.toLowerCase()}. Анализ ниши "${seed}" и практические рекомендации.`,
+      (topic, seed) => `${topic} — пошаговая инструкция. Как использовать "${seed}" для заработка в 2026.`,
+      (topic, seed) => `Практическое руководство: ${topic.toLowerCase()}. Разбор запроса "${seed}" с примерами.`,
+      (topic, seed) => `${topic}: от теории к практике. Монетизация через "${seed}" — реальные кейсы.`,
+      (topic, seed) => `Экспертный взгляд на ${topic.toLowerCase()}. Как работать с нишей "${seed}" эффективно.`,
+      (topic, seed) => `${topic} в деталях. Инструменты, стратегии и способы заработка на "${seed}".`,
+      (topic, seed) => `Современный подход: ${topic.toLowerCase()}. Анализ спроса "${seed}" и методы продвижения.`,
+    ];
+    
+    const angle = angles[satelliteNumber % angles.length];
+    const descTemplate = descTemplates[satelliteNumber % descTemplates.length];
 
     for (let index = 0; index < count; index++) {
       const topic = topics[index % topics.length];
       const seed = blueprint.seedKeywords[index % blueprint.seedKeywords.length];
-      const slug = this.slugify(`${topic}-${index + 1}`);
+      
+      // Add satellite-specific variation to slug
+      const slugBase = this.slugify(`${topic}-${index + 1}`);
+      const slug = satelliteNumber > 1 ? `${slugBase}-v${satelliteNumber}` : slugBase;
+      
+      // Vary title based on satellite number and index
+      const titleVariations = [
+        `${topic} в 2026`,
+        `${angle.prefix} ${topic.toLowerCase()}`,
+        `${topic}: ${angle.suffix}`,
+        `${topic} — полный разбор`,
+        `${topic} для новичков и профи`,
+      ];
+      const title = titleVariations[(satelliteNumber + index) % titleVariations.length];
+      
+      // Vary H1 slightly
+      const h1Variations = [
+        topic,
+        `${topic} в 2026`,
+        `${angle.prefix} ${topic.toLowerCase()}`,
+        `${topic}: практическое руководство`,
+      ];
+      const h1 = h1Variations[(satelliteNumber + index * 2) % h1Variations.length];
 
       articles.push({
         slug,
-        title: `${topic} в 2026`,
-        h1: topic,
-        desc: `${topic}. Разбор спроса, оффера, инструментов и того, как монетизировать запрос "${seed}".`,
-        readTime: `${8 + (index % 7)} мин`,
-        keywords: this.uniqueList([topic, seed, blueprint.label, '2026']),
+        title,
+        h1,
+        desc: descTemplate(topic, seed),
+        readTime: `${8 + ((index + satelliteNumber) % 7)} мин`,
+        keywords: this.uniqueList([topic, seed, blueprint.label, '2026', angle.suffix]),
         type: 'article',
         url: `/blog/${slug}`,
       });
