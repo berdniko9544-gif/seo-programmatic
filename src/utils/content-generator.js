@@ -10,6 +10,9 @@ const { InternalLinkingEngine } = require('../utils/internal-linking');
 const { LongTailGenerator } = require('../utils/longtail-generator');
 const { SchemaGenerator } = require('../utils/schema-generator');
 const { ContentFreshnessManager } = require('../utils/content-freshness');
+const { GlossaryGenerator } = require('../utils/glossary-generator');
+const { ComparisonGenerator } = require('../utils/comparison-generator');
+const { ProblemSolutionGenerator } = require('../utils/problem-solution-generator');
 const { ContentOptimizer } = require('../utils/content-optimizer');
 const { SitemapGenerator } = require('../utils/sitemap-generator');
 const { RobotsGenerator } = require('../utils/robots-generator');
@@ -31,7 +34,7 @@ class ContentGenerator {
     this.linkingEngine = null;
   }
 
-  async generateSatelliteData(niche, satelliteNumber, pagesCount = 300) {
+  async generateSatelliteData(niche, satelliteNumber, pagesCount = 1000) {
     const blueprint = getSemanticBlueprint(niche);
     const pageBudget = buildPageBudget(pagesCount);
 
@@ -65,6 +68,21 @@ class ContentGenerator {
       articles,
       audiences
     );
+    
+    // NEW: Generate glossary pages
+    const glossaryPages = pageBudget.glossary > 0
+      ? GlossaryGenerator.generateGlossary(niche, pageBudget.glossary)
+      : [];
+    
+    // NEW: Generate tool comparisons
+    const toolComparisons = pageBudget.toolComparisons > 0
+      ? ComparisonGenerator.generateToolComparisons(tools, 10)
+      : [];
+    
+    // NEW: Generate problem-solution pages
+    const problemPages = pageBudget.problems > 0
+      ? ProblemSolutionGenerator.generateProblems(niche, directions, pageBudget.problems)
+      : [];
 
     const allPages = this.collectAllPages({
       directions,
@@ -75,6 +93,9 @@ class ContentGenerator {
       audiences,
       comparisonPairs,
       yearMonths,
+      glossaryPages,
+      toolComparisons,
+      problemPages,
       niche,
     });
 
@@ -89,6 +110,9 @@ class ContentGenerator {
       audiences,
       comparisonPairs,
       yearMonths,
+      glossaryPages,
+      toolComparisons,
+      problemPages,
       allPages,
       pageBudget,
       siteMeta: {

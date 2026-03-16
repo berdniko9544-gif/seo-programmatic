@@ -510,6 +510,11 @@ function buildPageBudget(targetPages = 1000) {
   const comparisons = requested >= 800 ? 15 : requested >= 340 ? 10 : 8;
   const periods = requested >= 800 ? 6 : 4;
   const articles = requested >= 800 ? 30 : requested >= 340 ? 20 : 18;
+  
+  // NEW: Add glossary, tool comparisons, and problem pages
+  const glossary = requested >= 800 ? 50 : requested >= 500 ? 30 : 0;
+  const toolComparisons = requested >= 800 ? 100 : requested >= 500 ? 50 : 0;
+  const problems = requested >= 800 ? 40 : requested >= 500 ? 20 : 0;
 
   // Scale directions and cities based on target, with higher limits
   let directions = clamp(Math.round(requested / 80), 8, 12);
@@ -524,7 +529,10 @@ function buildPageBudget(targetPages = 1000) {
     periods -
     articles -
     directions -
-    directions * cities;
+    directions * cities -
+    glossary -
+    toolComparisons -
+    problems;
 
   let longTail = computeLongTail();
 
@@ -562,6 +570,9 @@ function buildPageBudget(targetPages = 1000) {
     comparisons,
     periods,
     articles,
+    glossary,
+    toolComparisons,
+    problems,
     toolsPerCategory: requested >= 800 ? 12 : requested >= 340 ? 10 : 8,
     longTail,
     estimatedTotal:
@@ -573,6 +584,9 @@ function buildPageBudget(targetPages = 1000) {
       comparisons +
       periods +
       articles +
+      glossary +
+      toolComparisons +
+      problems +
       longTail,
   };
 }
