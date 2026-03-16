@@ -48,9 +48,13 @@ const defaultContent = {
   ]
 };
 
+// ISR optimization: pre-render only top 20 articles
 export async function generateStaticParams() {
-  return howToPages.map(p => ({ slug: p.slug }));
+  return howToPages.slice(0, 20).map(p => ({ slug: p.slug }));
 }
+
+// Revalidate every 6 hours
+export const revalidate = 21600;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;

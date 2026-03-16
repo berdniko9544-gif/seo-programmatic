@@ -5,15 +5,25 @@ import { directions, cities } from '@/data/seo-data';
 import { SITE_URL } from '@/config/site';
 import { getContentDates } from '@/config/content';
 
+// ISR optimization: pre-render only top 50 city+direction combinations
 export async function generateStaticParams() {
   const params = [];
-  for (const city of cities) {
-    for (const dir of directions) {
+  
+  // Prioritize: top 5 cities × top 10 directions = 50 pages
+  const topCities = cities.slice(0, 5);
+  const topDirections = directions.slice(0, 10);
+  
+  for (const city of topCities) {
+    for (const dir of topDirections) {
       params.push({ city: city.slug, direction: dir.id });
     }
   }
+  
   return params;
 }
+
+// Revalidate every 6 hours
+export const revalidate = 21600;
 
 export async function generateMetadata({ params }) {
   const { city: citySlug, direction: directionSlug } = await params;

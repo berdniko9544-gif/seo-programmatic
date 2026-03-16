@@ -5,9 +5,13 @@ import { toolCategories } from '@/data/seo-data';
 import { SITE_URL } from '@/config/site';
 import { CONTENT_UPDATED_LABEL } from '@/config/content';
 
+// ISR optimization: pre-render all tool categories (small number)
 export async function generateStaticParams() {
   return toolCategories.map(c => ({ category: c.id }));
 }
+
+// Revalidate every 6 hours
+export const revalidate = 21600;
 
 export async function generateMetadata({ params }) {
   const { category } = await params;

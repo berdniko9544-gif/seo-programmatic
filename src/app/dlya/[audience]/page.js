@@ -4,9 +4,13 @@ import { Header, Footer, CtaBlock, Breadcrumbs, PageJsonLd, InternalLinks } from
 import { directions, audiences } from '@/data/seo-data';
 import { SITE_URL } from '@/config/site';
 
+// ISR optimization: pre-render all audience pages (small number)
 export async function generateStaticParams() {
   return audiences.map(a => ({ audience: a.slug }));
 }
+
+// Revalidate every 12 hours
+export const revalidate = 43200;
 
 export async function generateMetadata({ params }) {
   const { audience } = await params;

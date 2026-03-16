@@ -22,11 +22,20 @@ try {
   console.warn('Long-tail pages data not found - will be generated');
 }
 
+// ISR optimization: pre-render only top 50 pages, rest on-demand
 export async function generateStaticParams() {
-  return longTailPages.map(page => ({
+  // Sort by priority/popularity and take top 50
+  const topPages = longTailPages
+    .sort((a, b) => (b.priority || 0) - (a.priority || 0))
+    .slice(0, 50);
+  
+  return topPages.map(page => ({
     slug: page.slug,
   }));
 }
+
+// Revalidate every 1 hour - pages built on-demand are cached
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -216,4 +225,4 @@ export default async function LongTailPage({ params }) {
   );
 }
 
-export const revalidate = 21600;
+// Moved to top with generateStaticParams

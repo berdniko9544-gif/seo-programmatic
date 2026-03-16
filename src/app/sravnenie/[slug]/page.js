@@ -5,9 +5,13 @@ import { comparisonPairs } from '@/data/seo-data';
 import { SITE_URL } from '@/config/site';
 import { getContentDates } from '@/config/content';
 
+// ISR optimization: pre-render only top 30 comparisons
 export async function generateStaticParams() {
-  return comparisonPairs.map(p => ({ slug: p.slug }));
+  return comparisonPairs.slice(0, 30).map(p => ({ slug: p.slug }));
 }
+
+// Revalidate every 12 hours
+export const revalidate = 43200;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;

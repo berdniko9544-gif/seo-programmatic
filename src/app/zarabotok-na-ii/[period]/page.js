@@ -4,9 +4,13 @@ import { Header, Footer, CtaBlock, Breadcrumbs, InternalLinks } from '@/componen
 import { directions, yearMonths } from '@/data/seo-data';
 import { SITE_URL } from '@/config/site';
 
+// ISR optimization: pre-render only last 12 months
 export async function generateStaticParams() {
-  return yearMonths.map(ym => ({ period: ym.slug }));
+  return yearMonths.slice(0, 12).map(ym => ({ period: ym.slug }));
 }
+
+// Revalidate every 24 hours
+export const revalidate = 86400;
 
 export async function generateMetadata({ params }) {
   const { period } = await params;
