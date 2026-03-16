@@ -14,11 +14,11 @@ export function Header() {
           1MB3 <span>{siteProfile.logoSuffix}</span>
         </Link>
         <nav style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-          <Link href="/napravleniya" style={{ fontSize: '14px', color: '#8b8b99' }}>РќР°РїСЂР°РІР»РµРЅРёСЏ</Link>
-          <Link href="/instrumenty" style={{ fontSize: '14px', color: '#8b8b99' }}>РРЅСЃС‚СЂСѓРјРµРЅС‚С‹</Link>
-          <Link href="/blog" style={{ fontSize: '14px', color: '#8b8b99' }}>Р‘Р»РѕРі</Link>
+          <Link href="/napravleniya" style={{ fontSize: '14px', color: '#8b8b99' }}>Направления</Link>
+          <Link href="/instrumenty" style={{ fontSize: '14px', color: '#8b8b99' }}>Инструменты</Link>
+          <Link href="/blog" style={{ fontSize: '14px', color: '#8b8b99' }}>Блог</Link>
           <a href={IS_SATELLITE ? buildMainSiteHref('/#offer') : '#offer'} className="header-cta">
-            {IS_SATELLITE ? siteProfile.ctaButton : 'РљСѓРїРёС‚СЊ РіР°Р№Рґ'}
+            {IS_SATELLITE ? siteProfile.ctaButton : 'Купить гайд'}
           </a>
         </nav>
       </div>
@@ -35,11 +35,11 @@ export function MainSiteResourceLinks({ compact = false }) {
     <section className={`hub-links ${compact ? 'hub-links--compact' : ''}`}>
       <div className="hub-links-head">
         <span className="eyebrow">{siteProfile.eyebrow}</span>
-        <h3>{compact ? 'Р“Р»Р°РІРЅС‹Р№ С…Р°Р± 1MB3' : 'РљСѓРґР° РёРґС‚Рё РґР°Р»СЊС€Рµ РІ РѕСЃРЅРѕРІРЅРѕРј С…Р°Р±Рµ 1MB3'}</h3>
+        <h3>{compact ? 'Главный хаб 1MB3' : 'Куда идти дальше в основном хабе 1MB3'}</h3>
         {!compact && (
           <p>
-            Р­С‚Рё СЃС‚СЂР°РЅРёС†С‹ СЃРѕР±РёСЂР°СЋС‚ РєРѕРјРјРµСЂС‡РµСЃРєРёРµ СЃС†РµРЅР°СЂРёРё, РёРЅСЃС‚СЂСѓРјРµРЅС‚С‹ Рё РЅР°РїСЂР°РІР»РµРЅРёСЏ,
-            Рє РєРѕС‚РѕСЂС‹Рј Р»РѕРіРёС‡РЅРѕ РІРµСЃС‚Рё С‡РёС‚Р°С‚РµР»СЏ РїРѕСЃР»Рµ РІС…РѕРґР° РїРѕ long-tail Р·Р°РїСЂРѕСЃР°Рј.
+            Эти страницы собирают коммерческие сценарии, инструменты и направления,
+            к которым логично вести читателя после входа по long-tail запросам.
           </p>
         )}
       </div>
@@ -80,55 +80,55 @@ export function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-col">
-            <h4>РќР°РїСЂР°РІР»РµРЅРёСЏ</h4>
-            <Link href="/napravleniya/ai-photo">AI-С„РѕС‚Рѕ</Link>
-            <Link href="/napravleniya/ai-copywriting">AI-РєРѕРїРёСЂР°Р№С‚РёРЅРі</Link>
-            <Link href="/napravleniya/ai-bots">AI-Р±РѕС‚С‹</Link>
-            <Link href="/napravleniya/ai-video">AI-РІРёРґРµРѕ</Link>
-            <Link href="/napravleniya/ai-design">AI-РґРёР·Р°Р№РЅ</Link>
-            <Link href="/napravleniya/ai-automation">AI-Р°РІС‚РѕРјР°С‚РёР·Р°С†РёСЏ</Link>
+            <h4>Направления</h4>
+            <Link href="/napravleniya/ai-photo">AI-фото</Link>
+            <Link href="/napravleniya/ai-copywriting">AI-копирайтинг</Link>
+            <Link href="/napravleniya/ai-bots">AI-боты</Link>
+            <Link href="/napravleniya/ai-video">AI-видео</Link>
+            <Link href="/napravleniya/ai-design">AI-дизайн</Link>
+            <Link href="/napravleniya/ai-automation">AI-автоматизация</Link>
           </div>
           <div className="footer-col">
-            <h4>РРЅСЃС‚СЂСѓРјРµРЅС‚С‹</h4>
-            <Link href="/instrumenty/text-ai">РўРµРєСЃС‚РѕРІС‹Рµ AI</Link>
-            <Link href="/instrumenty/image-ai">AI РґР»СЏ РёР·РѕР±СЂР°Р¶РµРЅРёР№</Link>
-            <Link href="/instrumenty/video-ai">AI РґР»СЏ РІРёРґРµРѕ</Link>
-            <Link href="/instrumenty/audio-ai">AI РґР»СЏ Р°СѓРґРёРѕ</Link>
-            <Link href="/instrumenty/automation-ai">AI-Р°РІС‚РѕРјР°С‚РёР·Р°С†РёСЏ</Link>
-            <Link href="/instrumenty/code-ai">AI РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё</Link>
+            <h4>Инструменты</h4>
+            <Link href="/instrumenty/text-ai">Текстовые AI</Link>
+            <Link href="/instrumenty/image-ai">AI для изображений</Link>
+            <Link href="/instrumenty/video-ai">AI для видео</Link>
+            <Link href="/instrumenty/audio-ai">AI для аудио</Link>
+            <Link href="/instrumenty/automation-ai">AI-автоматизация</Link>
+            <Link href="/instrumenty/code-ai">AI для разработки</Link>
           </div>
           <div className="footer-col">
-            <h4>Р‘Р»РѕРі</h4>
-            <Link href="/blog/kak-zarabotat-na-neirosetiah">РљР°Рє Р·Р°СЂР°Р±Р°С‚С‹РІР°С‚СЊ РЅР° РЅРµР№СЂРѕСЃРµС‚СЏС…</Link>
-            <Link href="/blog/zarabotok-na-chatgpt">Р—Р°СЂР°Р±РѕС‚РѕРє РЅР° ChatGPT</Link>
-            <Link href="/blog/zarabotok-na-midjourney">Р—Р°СЂР°Р±РѕС‚РѕРє РЅР° Midjourney</Link>
-            <Link href="/blog/pervyy-zakazchik-za-7-dney">РџРµСЂРІС‹Р№ Р·Р°РєР°Р·С‡РёРє Р·Р° 7 РґРЅРµР№</Link>
-            <Link href="/blog/ai-uslugi-dlya-biznesa">AI-СѓСЃР»СѓРіРё РґР»СЏ Р±РёР·РЅРµСЃР°</Link>
+            <h4>Блог</h4>
+            <Link href="/blog/kak-zarabotat-na-neirosetiah">Как зарабатывать на нейросетях</Link>
+            <Link href="/blog/zarabotok-na-chatgpt">Заработок на ChatGPT</Link>
+            <Link href="/blog/zarabotok-na-midjourney">Заработок на Midjourney</Link>
+            <Link href="/blog/pervyy-zakazchik-za-7-dney">Первый заказчик за 7 дней</Link>
+            <Link href="/blog/ai-uslugi-dlya-biznesa">AI-услуги для бизнеса</Link>
           </div>
           <div className="footer-col">
-            <h4>{IS_SATELLITE ? 'Р“Р»Р°РІРЅС‹Р№ С…Р°Р± 1MB3' : 'Рћ РїСЂРѕРµРєС‚Рµ'}</h4>
+            <h4>{IS_SATELLITE ? 'Главный хаб 1MB3' : 'О проекте'}</h4>
             {IS_SATELLITE ? (
               <>
                 {siteProfile.mainSiteLinks.slice(0, 4).map(link => (
                   <a key={link.path} href={buildMainSiteHref(link.path)}>{link.label}</a>
                 ))}
-                <a href={buildMainSiteHref('/#offer')}>Р“Р»Р°РІРЅРѕРµ РїСЂРµРґР»РѕР¶РµРЅРёРµ 1MB3</a>
+                <a href={buildMainSiteHref('/#offer')}>Главное предложение 1MB3</a>
               </>
             ) : (
               <>
                 <a href="https://t.me/Inside1mb3" target="_blank" rel="noopener">Telegram @Inside1mb3</a>
                 <a href="https://www.instagram.com/inside1mb3" target="_blank" rel="noopener">Instagram</a>
-                <a href={MAIN_SITE_URL}>РљСѓРїРёС‚СЊ РіР°Р№Рґ</a>
-                <Link href="/dlya/freelancer">Р”Р»СЏ С„СЂРёР»Р°РЅСЃРµСЂРѕРІ</Link>
-                <Link href="/dlya/business">Р”Р»СЏ РїСЂРµРґРїСЂРёРЅРёРјР°С‚РµР»РµР№</Link>
+                <a href={MAIN_SITE_URL}>Купить гайд</a>
+                <Link href="/dlya/freelancer">Для фрилансеров</Link>
+                <Link href="/dlya/business">Для предпринимателей</Link>
               </>
             )}
           </div>
         </div>
         <div className="footer-bottom">
-          В© 2026 1MB3. Р’СЃРµ РјР°С‚РµСЂРёР°Р»С‹ Р·Р°С‰РёС‰РµРЅС‹. РљРѕРЅС‚РµРЅС‚ СЃР»СѓР¶РёС‚ РЅР°РІРёРіР°С†РёРµР№ РїРѕ AI-РЅР°РїСЂР°РІР»РµРЅРёСЏРј Рё СЃРІСЏР·Р°РЅ СЃ РіР»Р°РІРЅС‹Рј С…Р°Р±РѕРј 1MB3.
+          © 2026 1MB3. Все материалы защищены. Контент служит навигацией по AI-направлениям и связан с главным хабом 1MB3.
           <br />
-          <a href={buildMainSiteHref('/legal/offer')}>РћС„РµСЂС‚Р°</a> В· <a href={buildMainSiteHref('/legal/privacy')}>РљРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚СЊ</a>
+          <a href={buildMainSiteHref('/legal/offer')}>Оферта</a> · <a href={buildMainSiteHref('/legal/privacy')}>Конфиденциальность</a>
         </div>
       </div>
     </footer>
@@ -141,11 +141,11 @@ export function CtaBlock() {
       <h2>{siteProfile.ctaTitle}</h2>
       <p>{siteProfile.ctaBody}</p>
       <div className="price-row">
-        <span className="price-old">в‚Ѕ 3 990</span>
-        <span className="price-new">в‚Ѕ 1 990</span>
+        <span className="price-old">₽ 3 990</span>
+        <span className="price-new">₽ 1 990</span>
       </div>
       <a href={IS_SATELLITE ? buildMainSiteHref('/#offer') : '#offer'} className="cta-btn">
-        {siteProfile.ctaButton} в†’
+        {siteProfile.ctaButton} →
       </a>
       <MainSiteResourceLinks compact />
     </div>
@@ -154,8 +154,8 @@ export function CtaBlock() {
 
 export function Breadcrumbs({ items }) {
   return (
-    <nav className="breadcrumbs container" aria-label="РќР°РІРёРіР°С†РёСЏ">
-      <Link href="/">Р“Р»Р°РІРЅР°СЏ</Link>
+    <nav className="breadcrumbs container" aria-label="Навигация">
+      <Link href="/">Главная</Link>
       {items.map((item, index) => (
         <span key={index}>
           <span>/</span>
@@ -192,4 +192,3 @@ export function InternalLinks({ links }) {
     </div>
   );
 }
-
