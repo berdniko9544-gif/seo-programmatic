@@ -12,7 +12,7 @@ on:
       pages_per_satellite:
         description: 'Target pages per satellite for a manual run'
         required: false
-        default: '300'
+        default: '1000'
 
 env:
   DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
@@ -52,7 +52,7 @@ jobs:
           REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
           MAIN_SITE_URL: ${{ env.MAIN_SITE_URL }}
           DAILY_SATELLITES: ${{ github.event.inputs.daily_satellites || '20' }}
-          PAGES_PER_SATELLITE: ${{ github.event.inputs.pages_per_satellite || '300' }}
+          PAGES_PER_SATELLITE: ${{ github.event.inputs.pages_per_satellite || '1000' }}
 
       - name: Submit sitemaps to Yandex (Webmaster API)
         if: always()
@@ -100,7 +100,7 @@ jobs:
         if: success()
         env:
           DAILY_SATELLITES: ${{ github.event.inputs.daily_satellites || '20' }}
-          PAGES_PER_SATELLITE: ${{ github.event.inputs.pages_per_satellite || '300' }}
+          PAGES_PER_SATELLITE: ${{ github.event.inputs.pages_per_satellite || '1000' }}
           MAIN_SITE_URL: ${{ env.MAIN_SITE_URL }}
         run: |
           echo "Daily generation complete"
