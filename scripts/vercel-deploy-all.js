@@ -27,6 +27,29 @@ function loadVercelToken() {
   return null;
 }
 
+// Load environment variables from satellite's .env.local
+function loadSatelliteEnv(satellitePath) {
+  const envPath = path.join(satellitePath, '.env.local');
+  const envVars = {};
+  
+  if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    const lines = envContent.split('\n');
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#')) {
+        const [key, ...valueParts] = trimmed.split('=');
+        if (key && valueParts.length > 0) {
+          envVars[key.trim()] = valueParts.join('=').trim();
+        }
+      }
+    }
+  }
+  
+  return envVars;
+}
+
 const CONFIG = {
   satellitesDir: path.join(process.cwd(), 'satellites'),
   logFile: path.join(process.cwd(), 'satellites', 'vercel-deploy-log.json'),
@@ -113,14 +136,25 @@ class VercelDeploymentManager {
     try {
       const projectName = `seo-sat-${satellite.name}`;
 
+      // Load satellite's environment variables
+      const satelliteEnv = loadSatelliteEnv(satellite.path);
+
+      // Remove NEXT_PUBLIC_SITE_URL from satellite env to let Vercel use its own
+      // This ensures canonical tags use the correct Vercel production URL
+      delete satelliteEnv.NEXT_PUBLIC_SITE_URL;
+      delete satelliteEnv.NEXT_PUBLIC_BASE_URL;
+
+      console.log(`  🔧 Main site: ${satelliteEnv.NEXT_PUBLIC_MAIN_SITE || 'NOT SET'}`);
+
       console.log('  📦 Building...');
       const buildStart = Date.now();
-      
+
       execSync('npm run build', {
         cwd: satellite.path,
         stdio: 'inherit',
         env: {
           ...process.env,
+          ...satelliteEnv,
           NODE_ENV: 'production',
           NEXT_TELEMETRY_DISABLED: '1',
         },
