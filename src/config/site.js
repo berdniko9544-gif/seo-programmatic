@@ -5,6 +5,7 @@ const DEFAULT_MAIN_SITE_URL =
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null) ||
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
   process.env.NEXT_PUBLIC_BASE_URL ||
   DEFAULT_MAIN_SITE_URL;
