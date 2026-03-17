@@ -109,10 +109,7 @@ class BuildManager {
     console.log(`  🔨 [${satellite.name}] Сборка...`);
 
     try {
-      execSync('npm run build', {
-        cwd: satellite.path,
-        stdio: 'pipe',
-      });
+      await this.buildWithTimeout(satellite, 600000); // 10 minute timeout
 
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
@@ -143,6 +140,25 @@ class BuildManager {
 
       console.error(`  ❌ [${satellite.name}] Ошибка: ${error.message.split('\n')[0]}`);
     }
+  }
+
+  async buildWithTimeout(satellite, timeoutMs = 600000) {
+    return Promise.race([
+      new Promise((resolve, reject) => {
+        try {
+          execSync('npm run build', {
+            cwd: satellite.path,
+            stdio: 'pipe',
+          });
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`Build timeout after ${timeoutMs / 1000}s`)), timeoutMs)
+      )
+    ]);
   }
 
   countPages(satellitePath) {

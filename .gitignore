@@ -25,3 +25,14 @@ test-results/
 
 # OpenNext build output
 .open-next/
+
+# Deployment and verification reports (may contain secrets)
+deployment-results.json
+*-results.json
+*-report.json
+*-verification.json
+*-analysis.json
+*-status.json
+*-log.json
+*-check.json
+*-diagnostics*.json

@@ -7,6 +7,14 @@
  * Usage: node deploy-all.js
  */
 
+const { validateEnv, validateOptionalEnv } = require('../src/utils/validate-env');
+
+// Validate required environment variables at startup
+validateEnv(['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID']);
+
+// Warn about optional variables
+validateOptionalEnv(['REVALIDATE_SECRET', 'DEEPSEEK_API_KEY', 'YANDEX_WEBMASTER_TOKEN', 'YANDEX_USER_ID']);
+
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
@@ -24,21 +32,10 @@ const CONFIG = {
 };
 
 function buildWranglerVars() {
-  const vars = [];
-  const maybe = [
-    'REVALIDATE_SECRET',
-    'DEEPSEEK_API_KEY',
-    'YANDEX_WEBMASTER_TOKEN',
-    'YANDEX_USER_ID',
-  ];
-
-  for (const key of maybe) {
-    if (process.env[key]) {
-      vars.push(`--var ${key}:${process.env[key]}`);
-    }
-  }
-
-  return vars.join(' ');
+  // Environment variables are now passed via process.env
+  // Wrangler will inherit them from the parent process
+  // This avoids exposing secrets in CLI arguments
+  return '';
 }
 
 class DeploymentManager {
@@ -152,11 +149,13 @@ class DeploymentManager {
 
       const vars = buildWranglerVars();
       const routeArg = route ? ` --route ${route}` : '';
-      const deployCmd = `npx --yes wrangler deploy --config wrangler.toml --name ${workerName}${routeArg} ${vars}`;
+      const deployCmd = `npx --yes wrangler deploy --config wrangler.toml --name ${workerName}${routeArg}`;
 
+      // Environment variables are passed via process.env, not CLI args
       execSync(deployCmd, {
         cwd: satellite.path,
         stdio: 'inherit',
+        env: { ...process.env }
       });
 
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);

@@ -1,12 +1,14 @@
 /**
  * INTERNAL LINKING ENGINE
  * Automatically adds contextual internal links within content
+ * Optimized with O(n) keyword index for fast lookups
  */
 
 class InternalLinkingEngine {
   constructor(pages = []) {
     this.pages = pages;
     this.linkMap = this.buildLinkMap();
+    this.keywordIndex = this.buildKeywordIndex();
   }
 
   /**
@@ -34,6 +36,28 @@ class InternalLinkingEngine {
   }
 
   /**
+   * Build optimized keyword index for O(1) lookups
+   * Maps keywords to page indices for fast access
+   */
+  buildKeywordIndex() {
+    const index = new Map();
+
+    this.pages.forEach((page, idx) => {
+      if (page.keywords && Array.isArray(page.keywords)) {
+        page.keywords.forEach(keyword => {
+          const key = keyword.toLowerCase();
+          if (!index.has(key)) {
+            index.set(key, []);
+          }
+          index.get(key).push(idx);
+        });
+      }
+    });
+
+    return index;
+  }
+
+  /**
    * Add internal links to content
    */
   addInternalLinks(content, currentUrl, maxLinks = 5) {
@@ -45,7 +69,7 @@ class InternalLinkingEngine {
     const addedLinks = new Set();
     let linksAdded = 0;
 
-    // Find potential link opportunities
+    // Find potential link opportunities using optimized index
     const opportunities = this.findLinkOpportunities(content, currentUrl);
 
     // Sort by relevance (longer keywords first)
@@ -71,27 +95,35 @@ class InternalLinkingEngine {
   }
 
   /**
-   * Find link opportunities in content
+   * Find link opportunities in content - OPTIMIZED VERSION
+   * Uses keyword index for O(n) complexity instead of O(n²)
    */
   findLinkOpportunities(content, currentUrl) {
     const opportunities = [];
     const contentLower = content.toLowerCase();
+    const words = new Set(contentLower.split(/\s+/).map(w => w.replace(/[^\w-]/g, '')));
 
-    this.linkMap.forEach((targets, keyword) => {
-      // Skip if keyword is too short
-      if (keyword.length < 4) return;
+    // O(n) lookup using keyword index
+    words.forEach(word => {
+      if (word.length < 4) return;
 
-      // Check if keyword exists in content
-      if (contentLower.includes(keyword)) {
-        // Find relevant target (not current page)
-        const target = targets.find(t => t.url !== currentUrl);
-        if (target) {
-          opportunities.push({
-            keyword: keyword,
-            url: target.url,
-            title: target.title,
-            type: target.type
-          });
+      if (this.keywordIndex.has(word)) {
+        const pageIndices = this.keywordIndex.get(word);
+
+        // Find first page that's not the current page
+        for (const idx of pageIndices) {
+          const page = this.pages[idx];
+          const pageUrl = page.url || page.path;
+
+          if (pageUrl !== currentUrl) {
+            opportunities.push({
+              keyword: word,
+              url: pageUrl,
+              title: page.title || page.name,
+              type: page.type
+            });
+            break; // Only add one opportunity per keyword
+          }
         }
       }
     });
@@ -165,11 +197,12 @@ class InternalLinkingEngine {
   }
 
   /**
-   * Update pages list
+   * Update pages list and rebuild indices
    */
   updatePages(pages) {
     this.pages = pages;
     this.linkMap = this.buildLinkMap();
+    this.keywordIndex = this.buildKeywordIndex();
   }
 }
 

@@ -89,7 +89,12 @@ export default function Home() {
               <div className="stat-label">{IS_SATELLITE ? 'маршрут в основной сайт' : 'главный хаб'}</div>
             </div>
           </div>
-          <a href={IS_SATELLITE ? `${MAIN_SITE_URL}/#offer` : '#offer'} className="cta-btn">
+          <a
+            href={MAIN_SITE_URL}
+            className="cta-btn"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             {siteProfile.ctaButton} →
           </a>
         </div>

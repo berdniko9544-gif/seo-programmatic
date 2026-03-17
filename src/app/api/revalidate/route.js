@@ -39,8 +39,20 @@ async function handleRevalidation(request) {
     );
   }
 
+  // Support both header-based (preferred) and query param (legacy) authentication
+  const headerSecret = request.headers.get('x-revalidate-secret');
   const { searchParams } = new URL(request.url);
-  const secret = searchParams.get('secret');
+  const querySecret = searchParams.get('secret');
+
+  const secret = headerSecret || querySecret;
+
+  if (!secret) {
+    return buildJsonResponse(
+      { revalidated: false, error: 'Missing secret. Provide via x-revalidate-secret header or secret query param.' },
+      { status: 401 },
+      rateLimit
+    );
+  }
 
   if (secret !== configuredSecret) {
     return buildJsonResponse(
@@ -48,6 +60,11 @@ async function handleRevalidation(request) {
       { status: 401 },
       rateLimit
     );
+  }
+
+  // Warn if using deprecated query param method
+  if (querySecret && !headerSecret) {
+    console.warn('⚠️  Revalidation using deprecated query param method. Please use x-revalidate-secret header instead.');
   }
 
   const requestedPath = searchParams.get('path');

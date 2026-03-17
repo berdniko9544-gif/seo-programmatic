@@ -7,6 +7,14 @@
  * Usage: node scripts/daily-generator.js
  */
 
+const { validateEnv } = require('../src/utils/validate-env');
+const { createLogger } = require('../src/utils/logger');
+const { ContentDeduplicator } = require('../src/utils/content-deduplicator');
+const { CheckpointManager } = require('./lib/checkpoint-manager');
+
+// Validate required environment variables at startup
+validateEnv(['DEEPSEEK_API_KEY']);
+
 const { ContentGenerator } = require('../src/utils/content-generator');
 const { SatelliteRegistry } = require('../src/utils/satellite-registry');
 const { SearchEnginePing } = require('../src/utils/search-ping');
@@ -44,6 +52,9 @@ class DailySatelliteGenerator {
     this.registry = new SatelliteRegistry();
     this.contentGenerator = new ContentGenerator(CONFIG.deepseekApiKey, this.registry);
     this.searchPing = new SearchEnginePing();
+    this.deduplicator = new ContentDeduplicator();
+    this.checkpointManager = new CheckpointManager();
+    this.logger = createLogger({ service: 'daily-generator' });
     this.results = [];
     this.startTime = Date.now();
     this._saving = false;
@@ -101,73 +112,166 @@ class DailySatelliteGenerator {
   }
 
   async generateSatellites() {
-    console.log('\nрџ“¦ STEP 1: Generating satellites with AI content');
+    console.log('\nрџ”¦ STEP 1: Generating satellites with AI content');
     console.log('в”Ђ'.repeat(80));
 
-    for (let i = 0; i < CONFIG.dailySatellites; i++) {
-      const niche = CONFIG.niches[i % CONFIG.niches.length];
-      const satelliteNumber = i + 1;
-      const domain = `${niche}-${Date.now()}-${i}`;
+    const batchSize = parseInt(process.env.GENERATION_BATCH_SIZE || '3');
+    console.log(`вљЎ Parallel generation enabled: batch size = ${batchSize}`);
 
-      console.log(`\n[${satelliteNumber}/${CONFIG.dailySatellites}] рџЋЁ Generating: ${domain}`);
+    // Load checkpoint to resume from last successful satellite
+    const checkpoint = this.checkpointManager.load();
+    const startIndex = checkpoint?.lastSuccessful !== undefined ? checkpoint.lastSuccessful + 1 : 0;
 
-      try {
-        const data = await this.contentGenerator.generateSatelliteData(
-          niche,
+    if (startIndex > 0) {
+      console.log(`рџ”Ќ Resuming from satellite ${startIndex + 1} (checkpoint found)`);
+      this.logger.info('Resuming from checkpoint', { startIndex, checkpoint });
+    }
+
+    for (let i = startIndex; i < CONFIG.dailySatellites; i += batchSize) {
+      const batchEnd = Math.min(i + batchSize, CONFIG.dailySatellites);
+      const batch = [];
+
+      // Prepare batch
+      for (let j = i; j < batchEnd; j++) {
+        const niche = CONFIG.niches[j % CONFIG.niches.length];
+        const satelliteNumber = j + 1;
+        const domain = `${niche}-${Date.now()}-${j}`;
+
+        batch.push({
+          index: j,
           satelliteNumber,
-          CONFIG.pagesPerSatellite
-        );
-        const actualPages = this.getActualPageCount(data);
-
-        const generator = new SatelliteGenerator({
           niche,
-          pages: CONFIG.pagesPerSatellite,
           domain,
-          customData: data,
-          templateFamily: data?.siteMeta?.templateFamily,
-        });
-
-        await generator.generate();
-
-        const satelliteUrl = computeSatellitePublicUrl(domain);
-        if (!satelliteUrl) {
-          throw new Error('Missing satellite public URL configuration. Set SATELLITE_PARENT_DOMAIN or CLOUDFLARE_WORKERS_SUBDOMAIN.');
-        }
-        this.contentGenerator.registerSatellite({
-          name: domain,
-          domain,
-          niche,
-          url: satelliteUrl,
-          pages: data.articles || [],
-        });
-
-        this.results.push({
-          id: satelliteNumber,
-          domain,
-          niche,
-          pages: actualPages,
-          requestedPages: CONFIG.pagesPerSatellite,
-          templateFamily: data?.siteMeta?.templateFamily,
-          success: true,
-          timestamp: new Date().toISOString(),
-        });
-
-        console.log(`вњ… [${satelliteNumber}] Generated successfully (${actualPages} pages, family: ${data?.siteMeta?.templateFamily})`);
-      } catch (error) {
-        console.error(`вќЊ [${satelliteNumber}] Error:`, error.message);
-
-        this.results.push({
-          id: satelliteNumber,
-          domain,
-          niche,
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
         });
       }
 
-      if (i < CONFIG.dailySatellites - 1) {
-        await this.sleep(2000);
+      // Process batch in parallel
+      console.log(`\nрџ”„ Processing batch ${Math.floor(i / batchSize) + 1} (satellites ${i + 1}-${batchEnd})`);
+
+      await Promise.all(
+        batch.map(item => this.generateSingleSatellite(item))
+      );
+
+      // Save checkpoint after each batch
+      this.checkpointManager.save({
+        lastSuccessful: batchEnd - 1,
+        totalSatellites: CONFIG.dailySatellites,
+        completedBatches: Math.floor(i / batchSize) + 1,
+      });
+
+      // Memory check after each batch
+      this.checkMemoryUsage();
+    }
+
+    // Clear checkpoint on successful completion
+    this.checkpointManager.clear();
+  }
+
+  async generateSingleSatellite({ index, satelliteNumber, niche, domain }) {
+    console.log(`\n[${satelliteNumber}/${CONFIG.dailySatellites}] рџЋЁ Generating: ${domain}`);
+
+    try {
+      const data = await this.contentGenerator.generateSatelliteData(
+        niche,
+        satelliteNumber,
+        CONFIG.pagesPerSatellite
+      );
+      const actualPages = this.getActualPageCount(data);
+
+      // Check for duplicate content
+      if (data.articles && data.articles.length > 0) {
+        for (const article of data.articles) {
+          const isDuplicate = await this.deduplicator.checkDuplicate(
+            article.content || article.body || '',
+            domain
+          );
+          if (isDuplicate) {
+            this.logger.warn('Duplicate content detected', {
+              domain,
+              articleSlug: article.slug,
+              satelliteNumber,
+            });
+            console.warn(`  вљ пёЏ Duplicate content detected in article: ${article.slug}`);
+          }
+        }
+      }
+
+      const generator = new SatelliteGenerator({
+        niche,
+        pages: CONFIG.pagesPerSatellite,
+        domain,
+        customData: data,
+        templateFamily: data?.siteMeta?.templateFamily,
+      });
+
+      await generator.generate();
+
+      const satelliteUrl = computeSatellitePublicUrl(domain);
+      if (!satelliteUrl) {
+        throw new Error('Missing satellite public URL configuration. Set SATELLITE_PARENT_DOMAIN or CLOUDFLARE_WORKERS_SUBDOMAIN.');
+      }
+      this.contentGenerator.registerSatellite({
+        name: domain,
+        domain,
+        niche,
+        url: satelliteUrl,
+        pages: data.articles || [],
+      });
+
+      this.results.push({
+        id: satelliteNumber,
+        domain,
+        niche,
+        pages: actualPages,
+        requestedPages: CONFIG.pagesPerSatellite,
+        templateFamily: data?.siteMeta?.templateFamily,
+        success: true,
+        timestamp: new Date().toISOString(),
+      });
+
+      this.logger.info('Satellite generated successfully', {
+        satelliteNumber,
+        domain,
+        pages: actualPages,
+        templateFamily: data?.siteMeta?.templateFamily,
+      });
+
+      console.log(`вњ… [${satelliteNumber}] Generated successfully (${actualPages} pages, family: ${data?.siteMeta?.templateFamily})`);
+    } catch (error) {
+      console.error(`вќЊ [${satelliteNumber}] Error:`, error.message);
+
+      this.logger.error('Satellite generation failed', {
+        satelliteNumber,
+        domain,
+        niche,
+        error: error.message,
+        stack: error.stack,
+      });
+
+      this.results.push({
+        id: satelliteNumber,
+        domain,
+        niche,
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  checkMemoryUsage() {
+    const used = process.memoryUsage();
+    const heapUsedMB = (used.heapUsed / 1024 / 1024).toFixed(2);
+    const heapTotalMB = (used.heapTotal / 1024 / 1024).toFixed(2);
+    const heapUsedPercent = ((used.heapUsed / used.heapTotal) * 100).toFixed(1);
+
+    console.log(`\nрџ'ѕ Memory: ${heapUsedMB}MB / ${heapTotalMB}MB (${heapUsedPercent}%)`);
+
+    if (heapUsedPercent > 85) {
+      console.warn(`вљ пёЏ High memory usage: ${heapUsedPercent}%`);
+      if (global.gc) {
+        console.log('рџ—'пёЏ Running garbage collection...');
+        global.gc();
       }
     }
   }

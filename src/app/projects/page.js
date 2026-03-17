@@ -1,8 +1,12 @@
 import { Header, Footer } from '@/components/shared';
+import { SITE_URL } from '@/config/site';
 
 export const metadata = {
   title: 'Наши Проекты - AI Сателлиты | Zarabotok-na-AI',
   description: 'Сеть специализированных сайтов о заработке с помощью искусственного интеллекта. Копирайтинг, дизайн, автоматизация, маркетинг, видео, бизнес, фриланс, обучение.',
+  alternates: {
+    canonical: `${SITE_URL}/projects`,
+  },
   openGraph: {
     title: 'Наши Проекты - AI Сателлиты',
     description: 'Сеть специализированных сайтов о заработке с помощью искусственного интеллекта',

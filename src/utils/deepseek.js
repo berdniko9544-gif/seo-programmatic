@@ -69,6 +69,22 @@ class DeepSeekClient {
     });
   }
 
+  async generateWithRetry(prompt, options = {}, maxRetries = 3) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await this.generateContent(prompt, options);
+      } catch (error) {
+        if (attempt === maxRetries) {
+          throw error;
+        }
+
+        const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+        console.warn(`DeepSeek API attempt ${attempt} failed, retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
   async generateArticle(topic, niche, keywords = []) {
     const prompt = `Write a unique, SEO-optimized article about "${topic}" in the ${niche} niche.
 
@@ -83,7 +99,7 @@ Requirements:
 
 Format as markdown.`;
 
-    return await this.generateContent(prompt, { maxTokens: 3000 });
+    return await this.generateWithRetry(prompt, { maxTokens: 3000 });
   }
 
   async generatePageContent(direction, city, niche) {
@@ -99,7 +115,7 @@ Requirements:
 
 Format as JSON with fields: title, h1, description, content, faq`;
 
-    const response = await this.generateContent(prompt, { maxTokens: 2500 });
+    const response = await this.generateWithRetry(prompt, { maxTokens: 2500 });
 
     try {
       return JSON.parse(response);
@@ -129,7 +145,7 @@ Requirements:
 
 Format as JSON with fields: id, name, description, keywords, faq`;
 
-    const response = await this.generateContent(prompt, { maxTokens: 2000 });
+    const response = await this.generateWithRetry(prompt, { maxTokens: 2000 });
 
     try {
       return JSON.parse(response);

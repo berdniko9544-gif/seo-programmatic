@@ -191,7 +191,16 @@ class ContentGenerator {
     const topics = blueprint.articleTopics;
     const articles = [];
     
-    // Variation angles based on satellite number
+    // Seeded random function for consistent but unique variations
+    const seededRandom = (seed) => {
+      const x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    };
+    
+    // Timestamp-based seed for true uniqueness
+    const timeSeed = Date.now() + satelliteNumber * 1000;
+    
+    // 50+ variation angles for deep uniqueness
     const angles = [
       { prefix: 'Как', suffix: 'пошаговая инструкция' },
       { prefix: 'Топ способов', suffix: 'проверенные методы' },
@@ -201,8 +210,56 @@ class ContentGenerator {
       { prefix: 'Стратегии', suffix: 'что работает' },
       { prefix: 'Инструменты для', suffix: 'обзор и сравнение' },
       { prefix: 'Ошибки в', suffix: 'как избежать' },
+      { prefix: 'Полное руководство', suffix: 'с примерами' },
+      { prefix: 'Эффективные методы', suffix: 'проверено на практике' },
+      { prefix: 'Лучшие практики', suffix: 'от профессионалов' },
+      { prefix: 'Детальный разбор', suffix: 'все нюансы' },
+      { prefix: 'Современные подходы', suffix: 'актуальные решения' },
+      { prefix: 'Проверенные способы', suffix: 'работающие схемы' },
+      { prefix: 'Экспертные советы', suffix: 'профессиональный взгляд' },
+      { prefix: 'Практическое применение', suffix: 'реальные результаты' },
+      { prefix: 'Комплексный подход', suffix: 'системное решение' },
+      { prefix: 'Инновационные методы', suffix: 'новые возможности' },
+      { prefix: 'Оптимальные решения', suffix: 'максимальная эффективность' },
+      { prefix: 'Углубленный анализ', suffix: 'детальное изучение' },
+      { prefix: 'Мастер-класс по', suffix: 'от А до Я' },
+      { prefix: 'Продвинутые техники', suffix: 'для опытных' },
+      { prefix: 'Базовые принципы', suffix: 'фундаментальные знания' },
+      { prefix: 'Быстрый старт в', suffix: 'за 7 дней' },
+      { prefix: 'Полный курс', suffix: 'все что нужно знать' },
+      { prefix: 'Практикум по', suffix: 'упражнения и задания' },
+      { prefix: 'Кейс-стади', suffix: 'разбор успешных проектов' },
+      { prefix: 'Чек-лист для', suffix: 'пошаговый план' },
+      { prefix: 'Roadmap по', suffix: 'путь к результату' },
+      { prefix: 'Интенсив', suffix: 'ускоренное обучение' },
+      { prefix: 'Воркшоп', suffix: 'практические занятия' },
+      { prefix: 'Тренинг по', suffix: 'развитие навыков' },
+      { prefix: 'Методология', suffix: 'системный подход' },
+      { prefix: 'Фреймворк для', suffix: 'структурированное решение' },
+      { prefix: 'Blueprint', suffix: 'готовый план действий' },
+      { prefix: 'Toolkit для', suffix: 'набор инструментов' },
+      { prefix: 'Playbook по', suffix: 'игровая стратегия' },
+      { prefix: 'Система', suffix: 'комплексное решение' },
+      { prefix: 'Алгоритм', suffix: 'четкая последовательность' },
+      { prefix: 'Формула успеха в', suffix: 'проверенная схема' },
+      { prefix: 'Технология', suffix: 'современный метод' },
+      { prefix: 'Механика', suffix: 'как это работает' },
+      { prefix: 'Архитектура', suffix: 'структура и компоненты' },
+      { prefix: 'Экосистема', suffix: 'все элементы системы' },
+      { prefix: 'Инфраструктура для', suffix: 'базовые компоненты' },
+      { prefix: 'Платформа', suffix: 'единое решение' },
+      { prefix: 'Стек технологий', suffix: 'набор инструментов' },
+      { prefix: 'Процесс', suffix: 'от идеи до результата' },
+      { prefix: 'Workflow по', suffix: 'рабочий процесс' },
+      { prefix: 'Pipeline для', suffix: 'конвейер действий' },
+      { prefix: 'Автоматизация', suffix: 'эффективные процессы' },
+      { prefix: 'Оптимизация', suffix: 'улучшение результатов' },
+      { prefix: 'Масштабирование', suffix: 'рост и развитие' },
+      { prefix: 'Монетизация через', suffix: 'способы заработка' },
+      { prefix: 'Аналитика', suffix: 'данные и метрики' },
     ];
     
+    // 50+ description templates for deep uniqueness
     const descTemplates = [
       (topic, seed) => `${topic}. Разбор спроса, оффера, инструментов и того, как монетизировать запрос "${seed}".`,
       (topic, seed) => `Полный гайд: ${topic.toLowerCase()}. Анализ ниши "${seed}" и практические рекомендации.`,
@@ -212,44 +269,206 @@ class ContentGenerator {
       (topic, seed) => `Экспертный взгляд на ${topic.toLowerCase()}. Как работать с нишей "${seed}" эффективно.`,
       (topic, seed) => `${topic} в деталях. Инструменты, стратегии и способы заработка на "${seed}".`,
       (topic, seed) => `Современный подход: ${topic.toLowerCase()}. Анализ спроса "${seed}" и методы продвижения.`,
+      (topic, seed) => `Детальный разбор: ${topic}. Практическое применение "${seed}" для достижения результатов.`,
+      (topic, seed) => `${topic} — комплексное руководство. Работа с "${seed}": стратегии и тактики 2026.`,
+      (topic, seed) => `Мастер-класс: ${topic.toLowerCase()}. Как превратить "${seed}" в источник дохода.`,
+      (topic, seed) => `${topic}: профессиональный подход. Глубокий анализ ниши "${seed}" с реальными примерами.`,
+      (topic, seed) => `Экспертное руководство по ${topic.toLowerCase()}. Монетизация "${seed}" — пошаговый план.`,
+      (topic, seed) => `${topic} в 2026: актуальные методы. Как эффективно использовать "${seed}" для бизнеса.`,
+      (topic, seed) => `Практический курс: ${topic}. Разбор запроса "${seed}" от базы до продвинутых техник.`,
+      (topic, seed) => `${topic} — системный подход. Анализ, инструменты и стратегии работы с "${seed}".`,
+      (topic, seed) => `Полное погружение в ${topic.toLowerCase()}. Как "${seed}" может стать вашим преимуществом.`,
+      (topic, seed) => `${topic}: от новичка до профи. Пошаговое освоение ниши "${seed}" с нуля.`,
+      (topic, seed) => `Углубленный гайд: ${topic}. Все аспекты работы с "${seed}" — теория и практика.`,
+      (topic, seed) => `${topic} — проверенные методы. Как "${seed}" использовать для максимальной отдачи.`,
+      (topic, seed) => `Современная методология: ${topic.toLowerCase()}. Работа с "${seed}" в условиях 2026 года.`,
+      (topic, seed) => `${topic}: кейсы и примеры. Реальные истории успеха с использованием "${seed}".`,
+      (topic, seed) => `Практикум по ${topic.toLowerCase()}. Применение "${seed}" в различных сценариях.`,
+      (topic, seed) => `${topic} — инструкция для действия. Как начать работать с "${seed}" уже сегодня.`,
+      (topic, seed) => `Стратегический подход к ${topic.toLowerCase()}. Долгосрочная работа с нишей "${seed}".`,
+      (topic, seed) => `${topic}: технологии и инструменты. Современные решения для работы с "${seed}".`,
+      (topic, seed) => `Комплексный анализ: ${topic}. Возможности и перспективы ниши "${seed}" в 2026.`,
+      (topic, seed) => `${topic} — blueprint для успеха. Готовый план работы с "${seed}" от А до Я.`,
+      (topic, seed) => `Эффективные техники: ${topic.toLowerCase()}. Как "${seed}" превратить в прибыльный проект.`,
+      (topic, seed) => `${topic}: roadmap и стратегия. Пошаговый путь к результатам через "${seed}".`,
+      (topic, seed) => `Продвинутое руководство: ${topic}. Глубокое понимание и применение "${seed}".`,
+      (topic, seed) => `${topic} — фреймворк для работы. Структурированный подход к монетизации "${seed}".`,
+      (topic, seed) => `Интенсивный курс: ${topic.toLowerCase()}. Быстрое освоение ниши "${seed}" за 7 дней.`,
+      (topic, seed) => `${topic}: аналитика и метрики. Как измерять успех при работе с "${seed}".`,
+      (topic, seed) => `Воркшоп по ${topic.toLowerCase()}. Практические упражнения и задания на тему "${seed}".`,
+      (topic, seed) => `${topic} — автоматизация процессов. Эффективные инструменты для работы с "${seed}".`,
+      (topic, seed) => `Масштабирование через ${topic.toLowerCase()}. Как "${seed}" использовать для роста бизнеса.`,
+      (topic, seed) => `${topic}: оптимизация и улучшение. Повышение эффективности работы с "${seed}".`,
+      (topic, seed) => `Экосистема ${topic.toLowerCase()}. Все компоненты успешной работы с "${seed}".`,
+      (topic, seed) => `${topic} — платформенный подход. Единое решение для монетизации "${seed}".`,
+      (topic, seed) => `Технологический стек: ${topic}. Современные инструменты для работы с "${seed}".`,
+      (topic, seed) => `${topic}: процессы и workflow. Организация эффективной работы с нишей "${seed}".`,
+      (topic, seed) => `Pipeline для ${topic.toLowerCase()}. Конвейер действий от идеи до результата с "${seed}".`,
+      (topic, seed) => `${topic} — архитектура решения. Структура и компоненты работы с "${seed}".`,
+      (topic, seed) => `Механика ${topic.toLowerCase()}. Как работает система монетизации через "${seed}".`,
+      (topic, seed) => `${topic}: формула успеха. Проверенная схема заработка на "${seed}" в 2026.`,
+      (topic, seed) => `Алгоритм работы с ${topic.toLowerCase()}. Четкая последовательность действий для "${seed}".`,
+      (topic, seed) => `${topic} — система и методология. Комплексный подход к освоению ниши "${seed}".`,
+      (topic, seed) => `Toolkit для ${topic.toLowerCase()}. Полный набор инструментов для работы с "${seed}".`,
+      (topic, seed) => `${topic}: playbook и стратегии. Игровые тактики для победы в нише "${seed}".`,
+      (topic, seed) => `Инфраструктура ${topic.toLowerCase()}. Базовые компоненты для работы с "${seed}".`,
+      (topic, seed) => `${topic} — инновационные методы. Новые возможности монетизации через "${seed}".`,
+      (topic, seed) => `Чек-лист по ${topic.toLowerCase()}. Пошаговый план действий для освоения "${seed}".`,
+      (topic, seed) => `${topic}: тренинг и развитие. Прокачка навыков работы с нишей "${seed}".`,
+      (topic, seed) => `Базовые принципы ${topic.toLowerCase()}. Фундаментальные знания о "${seed}" для старта.`,
     ];
     
-    const angle = angles[satelliteNumber % angles.length];
-    const descTemplate = descTemplates[satelliteNumber % descTemplates.length];
+    // Use seeded random instead of simple modulo for true uniqueness
+    const angleIndex = Math.floor(seededRandom(timeSeed + 1) * angles.length);
+    const descIndex = Math.floor(seededRandom(timeSeed + 2) * descTemplates.length);
+    
+    const angle = angles[angleIndex];
+    const descTemplate = descTemplates[descIndex];
 
     for (let index = 0; index < count; index++) {
       const topic = topics[index % topics.length];
       const seed = blueprint.seedKeywords[index % blueprint.seedKeywords.length];
       
-      // Add satellite-specific variation to slug
+      // Add satellite-specific variation to slug - predictable but unique
       const slugBase = this.slugify(`${topic}-${index + 1}`);
-      const slug = satelliteNumber > 1 ? `${slugBase}-v${satelliteNumber}` : slugBase;
+      const timeHash = Math.floor(timeSeed / 1000000); // Creates unique but consistent hash
+      const slugSuffix = satelliteNumber > 1 ? `-s${satelliteNumber}t${timeHash}` : '';
+      const slug = `${slugBase}${slugSuffix}`;
       
-      // Vary title based on satellite number and index
+      // 50+ title variations for deep uniqueness
       const titleVariations = [
         `${topic} в 2026`,
         `${angle.prefix} ${topic.toLowerCase()}`,
         `${topic}: ${angle.suffix}`,
         `${topic} — полный разбор`,
         `${topic} для новичков и профи`,
+        `${topic}: практическое руководство`,
+        `${topic} — экспертный подход`,
+        `${topic} от А до Я`,
+        `${topic}: современные методы`,
+        `${topic} — пошаговая инструкция`,
+        `Как освоить ${topic.toLowerCase()}`,
+        `${topic}: секреты успеха`,
+        `${topic} — полный курс`,
+        `${topic} для начинающих`,
+        `${topic}: продвинутые техники`,
+        `${topic} — мастер-класс`,
+        `${topic} в деталях`,
+        `${topic}: проверенные методы`,
+        `${topic} — комплексный подход`,
+        `${topic} на практике`,
+        `${topic}: эффективные стратегии`,
+        `${topic} — blueprint для успеха`,
+        `${topic} шаг за шагом`,
+        `${topic}: roadmap и план`,
+        `${topic} — системный подход`,
+        `${topic} для профессионалов`,
+        `${topic}: инструменты и методы`,
+        `${topic} — детальный разбор`,
+        `${topic} в 2026 году`,
+        `${topic}: кейсы и примеры`,
+        `${topic} — практикум`,
+        `${topic} для бизнеса`,
+        `${topic}: технологии и решения`,
+        `${topic} — воркшоп`,
+        `${topic} с нуля`,
+        `${topic}: аналитика и метрики`,
+        `${topic} — интенсив`,
+        `${topic} для роста`,
+        `${topic}: оптимизация процессов`,
+        `${topic} — фреймворк`,
+        `${topic} в действии`,
+        `${topic}: автоматизация`,
+        `${topic} — платформа`,
+        `${topic} для масштабирования`,
+        `${topic}: инновационный подход`,
+        `${topic} — toolkit`,
+        `${topic} для монетизации`,
+        `${topic}: чек-лист и план`,
+        `${topic} — экосистема`,
+        `${topic} для стартапов`,
+        `${topic}: формула успеха`,
+        `${topic} — алгоритм действий`,
+        `${topic} для фрилансеров`,
+        `${topic}: механика и процессы`,
+        `${topic} — архитектура решения`,
       ];
-      const title = titleVariations[(satelliteNumber + index) % titleVariations.length];
       
-      // Vary H1 slightly
+      // 50+ H1 variations for deep uniqueness
       const h1Variations = [
         topic,
         `${topic} в 2026`,
         `${angle.prefix} ${topic.toLowerCase()}`,
         `${topic}: практическое руководство`,
+        `${topic} — полное руководство`,
+        `${topic}: от теории к практике`,
+        `${topic} — экспертный взгляд`,
+        `${topic} для начинающих и профи`,
+        `${topic}: современный подход`,
+        `${topic} — детальный разбор`,
+        `${topic} в деталях`,
+        `${topic}: пошаговая инструкция`,
+        `${topic} — мастер-класс`,
+        `${topic} на практике`,
+        `${topic}: комплексное руководство`,
+        `${topic} — системный подход`,
+        `${topic} от А до Я`,
+        `${topic}: проверенные методы`,
+        `${topic} — практический курс`,
+        `${topic} для профессионалов`,
+        `${topic}: эффективные стратегии`,
+        `${topic} — углубленный гайд`,
+        `${topic} шаг за шагом`,
+        `${topic}: roadmap и стратегия`,
+        `${topic} — blueprint успеха`,
+        `${topic} в действии`,
+        `${topic}: инструменты и техники`,
+        `${topic} — фреймворк для работы`,
+        `${topic} с нуля до результата`,
+        `${topic}: кейсы и примеры`,
+        `${topic} — практикум и воркшоп`,
+        `${topic} для бизнеса`,
+        `${topic}: технологии 2026`,
+        `${topic} — интенсивный курс`,
+        `${topic} для роста и развития`,
+        `${topic}: оптимизация и улучшение`,
+        `${topic} — платформенный подход`,
+        `${topic} для масштабирования`,
+        `${topic}: автоматизация процессов`,
+        `${topic} — toolkit и инструменты`,
+        `${topic} для монетизации`,
+        `${topic}: чек-лист действий`,
+        `${topic} — экосистема решений`,
+        `${topic} для стартапов`,
+        `${topic}: формула успеха`,
+        `${topic} — алгоритм работы`,
+        `${topic} для фрилансеров`,
+        `${topic}: механика и workflow`,
+        `${topic} — архитектура системы`,
+        `${topic} для предпринимателей`,
+        `${topic}: инновационные методы`,
+        `${topic} — полный стек`,
+        `${topic} для агентств`,
+        `${topic}: pipeline и процессы`,
+        `${topic} — инфраструктура`,
       ];
-      const h1 = h1Variations[(satelliteNumber + index * 2) % h1Variations.length];
+      
+      // Use seeded random for title and H1 selection
+      const titleIndex = Math.floor(seededRandom(timeSeed + index + 200) * titleVariations.length);
+      const h1Index = Math.floor(seededRandom(timeSeed + index + 300) * h1Variations.length);
+      
+      const title = titleVariations[titleIndex];
+      const h1 = h1Variations[h1Index];
+      
+      // Randomize read time between 5-15 minutes
+      const readTime = Math.floor(seededRandom(timeSeed + index + 400) * 11) + 5;
 
       articles.push({
         slug,
         title,
         h1,
         desc: descTemplate(topic, seed),
-        readTime: `${8 + ((index + satelliteNumber) % 7)} мин`,
+        readTime: `${readTime} мин`,
         keywords: this.uniqueList([topic, seed, blueprint.label, '2026', angle.suffix]),
         type: 'article',
         url: `/blog/${slug}`,

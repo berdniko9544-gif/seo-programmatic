@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { IS_SATELLITE, MAIN_SITE_URL, SITE_URL } from '@/config/site';
 import { siteProfile } from '@/config/site-profile';
+import { getSatelliteNetwork } from '@/utils/satellite-network';
 
 function buildMainSiteHref(path = '') {
-  return `${MAIN_SITE_URL}${path}`;
+  const baseUrl = MAIN_SITE_URL.replace(/\/$/, '');
+  return path ? `${baseUrl}${path}` : `${baseUrl}/`;
 }
 
 export function Header() {
@@ -17,8 +19,13 @@ export function Header() {
           <Link href="/napravleniya" style={{ fontSize: '14px', color: '#8b8b99' }}>Направления</Link>
           <Link href="/instrumenty" style={{ fontSize: '14px', color: '#8b8b99' }}>Инструменты</Link>
           <Link href="/blog" style={{ fontSize: '14px', color: '#8b8b99' }}>Блог</Link>
-          <a href={IS_SATELLITE ? buildMainSiteHref('/#offer') : '#offer'} className="header-cta">
-            {IS_SATELLITE ? siteProfile.ctaButton : 'Купить гайд'}
+          <a
+            href={buildMainSiteHref()}
+            className="header-cta"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {siteProfile.ctaButton}
           </a>
         </nav>
       </div>
@@ -75,15 +82,7 @@ export function FamilyBrief() {
 }
 
 export function Footer() {
-  // Load satellite network links if available
-  let satelliteNetwork = null;
-  if (IS_SATELLITE) {
-    try {
-      satelliteNetwork = require('../../satellite-network.json');
-    } catch (e) {
-      // Network config not available yet
-    }
-  }
+  const satelliteNetwork = getSatelliteNetwork();
 
   return (
     <footer className="site-footer">
@@ -122,7 +121,7 @@ export function Footer() {
                 {siteProfile.mainSiteLinks.slice(0, 4).map(link => (
                   <a key={link.path} href={buildMainSiteHref(link.path)}>{link.label}</a>
                 ))}
-                <a href={buildMainSiteHref('/#offer')}>Главное предложение 1MB3</a>
+                <a href={buildMainSiteHref()}>Главное предложение 1MB3</a>
               </>
             ) : (
               <>
@@ -174,7 +173,12 @@ export function CtaBlock() {
         <span className="price-old">₽ 3 990</span>
         <span className="price-new">₽ 1 990</span>
       </div>
-      <a href={IS_SATELLITE ? buildMainSiteHref('/#offer') : '#offer'} className="cta-btn">
+      <a
+        href={buildMainSiteHref()}
+        className="cta-btn"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         {siteProfile.ctaButton} →
       </a>
       <MainSiteResourceLinks compact />

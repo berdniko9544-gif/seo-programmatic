@@ -4,7 +4,10 @@ const nextConfig = {
   // output: 'export', // REMOVED for ISR support
 
   images: {
-    unoptimized: true,
+    unoptimized: false,
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
   compress: true,
@@ -16,12 +19,34 @@ const nextConfig = {
   // Turbopack is enabled by default in Next.js 16. We rely on a custom webpack config
   // for chunk splitting, so force Webpack via `next build --webpack`.
 
-  // Security headers
+  // Security and caching headers
   async headers() {
     return [
       {
+        source: '/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
         source: '/:path*',
         headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400',
+          },
           {
             key: 'X-DNS-Prefetch-Control',
             value: 'on',
